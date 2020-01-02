@@ -3,13 +3,14 @@ import { PassportStrategy } from "@nestjs/passport";
 import { Strategy } from "passport-google-oauth20";
 import { AuthService, Provider  } from '../auth/auth.service';
 import {AuthFlowHelper} from '../../Helper/auth-flow-helper';
-import { UserDto } from '../../../DTO/UserDto/user-dto';
 import { UserDtoCreate } from '../../../DTO/UserDto/user-dto-create';
+
 /*
 * 구글 소셜 로그인 유효성 검사를 담당하는 개체임.
 * 얘를 이용해서 클라이언트한테 로그인페이지도 보내줌.
 * 따로 유효성검사를 하고 싶다면 할 수 있는 콜백도 제공해줌
-* */
+*
+*/
 @Injectable()
 export class GoogleStrategyService extends PassportStrategy(Strategy, 'google')
 {
