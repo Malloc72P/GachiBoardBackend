@@ -2,8 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from "@nestjs/passport";
 import { Strategy } from "passport-google-oauth20";
 import { AuthService, Provider  } from '../auth/auth.service';
-import {AuthFlowHelper} from '../../Helper/auth-flow-helper';
 import { UserDtoCreate } from '../../../DTO/UserDto/user-dto-create';
+import { ServerSetting } from "../../../Config/server-setting";
+import { ServerSecret } from "../../../Config/server-secret";
 
 /*
 * 구글 소셜 로그인 유효성 검사를 담당하는 개체임.
@@ -15,16 +16,13 @@ import { UserDtoCreate } from '../../../DTO/UserDto/user-dto-create';
 export class GoogleStrategyService extends PassportStrategy(Strategy, 'google')
 {
 
-  constructor(
-    private authService: AuthService
-  )
-  {
+  constructor( private authService: AuthService){
     super({
-      clientID    : AuthFlowHelper.getGoogleClientId(),
-      clientSecret: AuthFlowHelper.getGoogleClientSecret(),
-      callbackURL : AuthFlowHelper.getGoogleCallbackUrl(),
-      passReqToCallback: true,
-      scope: AuthFlowHelper.getGoogleScope()
+      clientID          : ServerSecret.clientID,
+      clientSecret      : ServerSecret.clientSecret,
+      callbackURL       : ServerSetting.callbackURL,
+      scope: ['email profile  openid'],
+      passReqToCallback: true
     });
   }
 

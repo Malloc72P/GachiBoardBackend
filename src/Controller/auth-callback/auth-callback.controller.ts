@@ -1,8 +1,8 @@
 import { Controller, Get, HttpCode, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { UserDaoService } from '../../Model/DAO/user-dao/user-dao.service';
-import { HttpHelper } from '../../Model/Helper/http-helper'
 import { UserDto } from '../../DTO/UserDto/user-dto';
+import { ServerSetting } from "../../Config/server-setting";
 
 @Controller('auth')
 export class AuthCallbackController {
@@ -46,7 +46,7 @@ export class AuthCallbackController {
             .catch((err)=>{
               //(1-1-2) 신규 유저정보 DB에 저장 실패! Rollback 및 로그인 실패처리
               console.log("GoogleStrategyService > catch > err : ", err);
-              res.redirect(HttpHelper.ngRoutes.loginfailure);
+              res.redirect(ServerSetting.ngRoutes.loginFailure);
             });
         }
         //(1-2) 가입된 유저인 경우
@@ -58,14 +58,14 @@ export class AuthCallbackController {
             })
             .catch((err)=>{
               console.error(err);
-              res.redirect(HttpHelper.ngRoutes.loginfailure);
+              res.redirect(ServerSetting.ngRoutes.loginFailure);
             });
         }
       })
       //(2) api 요청 실패. 네트워크 장애가 원인일 것으로 예상됨
       .catch((err)=>{
         console.log("GoogleStrategyService > catch > err : ", err);
-        res.redirect(HttpHelper.ngRoutes.loginfailure);
+        res.redirect(ServerSetting.ngRoutes.loginFailure);
         throw new Error("request failed");
       });
     //#######
@@ -74,7 +74,7 @@ export class AuthCallbackController {
 
   redirectWithAuthToken(res, usersDto:UserDto){
     res.redirect(
-      HttpHelper.ngRoutes.loginSuccess
+      ServerSetting.ngRoutes.loginSuccess
       + usersDto.authToken
       + "/" + usersDto.idToken
       + "/" + usersDto.email

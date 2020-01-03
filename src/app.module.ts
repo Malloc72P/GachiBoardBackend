@@ -5,25 +5,35 @@ import { AuthCallbackController } from './Controller/auth-callback/auth-callback
 import { GoogleStrategyService } from './Model/SocialLogin/google-strategy/google-strategy.service';
 import { UserDaoService } from './Model/DAO/user-dao/user-dao.service';
 import { AuthService } from './Model/SocialLogin/auth/auth.service';
-import { usersProviders } from './DTO/UserDto/user.provider';
 import { PassportModule } from '@nestjs/passport';
-import { databaseProviders } from './Model/DatabaseConnector/database.provider';
+import { MongooseModule } from '@nestjs/mongoose';
+import { ServerSetting } from "./Config/server-setting";
+import { UsersSchema } from './DTO/UserDto/user.schema';
+
 @Module({
   imports: [
-    PassportModule
+    PassportModule,
+    MongooseModule.forRoot(ServerSetting.dbUrl),
+    MongooseModule.forFeature(
+        [
+            { name: "USERS_MODEL",
+              schema: UsersSchema }
+        ])
   ],
-  controllers: [
-    AppController,
-    AuthCallbackController
-  ],
+  controllers:
+    [
+      AppController,
+      AuthCallbackController,
+    ],
+
   providers:
     [
       AppService,
+
       GoogleStrategyService,
       UserDaoService,
       AuthService,
-      ...usersProviders,
-      ...databaseProviders
+
     ],
 })
 export class AppModule {}

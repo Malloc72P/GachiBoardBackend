@@ -1,11 +1,12 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { sign } from 'jsonwebtoken';
 
-import {AuthFlowHelper} from '../../Helper/auth-flow-helper';
 import { UserDaoService } from '../../DAO/user-dao/user-dao.service';
 
 import { UserDtoIntf } from '../../../DTO/UserDto/user-dto-intf.interface';
 import { UserDto } from '../../../DTO/UserDto/user-dto';
+
+import { ServerSecret } from "../../../Config/server-secret";
 
 export enum Provider
 {
@@ -17,8 +18,10 @@ export enum Provider
 * */
 @Injectable()
 export class AuthService {
-  private readonly JWT_SECRET_KEY = AuthFlowHelper.getSecretOrKey();
-  constructor(private readonly userDao: UserDaoService) {
+  private readonly JWT_SECRET_KEY;
+
+  constructor(  private readonly userDao: UserDaoService){
+    this.JWT_SECRET_KEY = ServerSecret.secretOrKey;
   };
   //요 메서드로 만들어줌.
   async validateOAuthLogin(thirdPartyId: string, provider: Provider): Promise<string>

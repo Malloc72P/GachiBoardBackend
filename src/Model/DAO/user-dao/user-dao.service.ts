@@ -1,11 +1,12 @@
 import { Model } from 'mongoose';
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
 import { UserDtoIntf } from '../../../DTO/UserDto/user-dto-intf.interface';
 import { UserDto } from '../../../DTO/UserDto/user-dto';
 
 @Injectable()
 export class UserDaoService {
-  constructor(@Inject('USERS_MODEL') private readonly usersModel: Model<UserDtoIntf>) {}
+  constructor(@InjectModel('USERS_MODEL') private readonly usersModel: Model<UserDtoIntf>) {}
 
   async create(createUsersDto: UserDto): Promise<UserDtoIntf> {
     const createdUsers = new this.usersModel(createUsersDto);
