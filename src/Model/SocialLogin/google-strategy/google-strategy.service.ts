@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from "@nestjs/passport";
 import { Strategy } from "passport-google-oauth20";
 import { AuthService, Provider  } from '../auth/auth.service';
-import { UserDtoCreate } from '../../../DTO/UserDto/user-dto-create';
 import { ServerSetting } from "../../../Config/server-setting";
 import { ServerSecret } from "../../../Config/server-secret";
+import { UserDto } from '../../DTO/UserDto/user-dto';
 
 /*
 * 구글 소셜 로그인 유효성 검사를 담당하는 개체임.
@@ -30,22 +30,19 @@ export class GoogleStrategyService extends PassportStrategy(Strategy, 'google')
   {
     try {
       //TODO 뭔가 따로 구글 로그인에 대해 유효성검사를 해주고 싶다면 여기에서 하면 됨.
-      // console.log("GoogleStrategyService >> validate >> profile : ",profile);
-      // console.log("GoogleStrategyService > validate > profile.id : ", profile.id);
-      // console.log("GoogleStrategyService > validate > profile.displayName : ", profile.displayName);
-      // console.log("GoogleStrategyService > validate > profile.email : ", profile.emails[0].value);
-      // console.log("GoogleStrategyService > validate > accessToken : ", accessToken);
 
       //### 1 : 토큰생성요청
       const jwt: string = await this.authService.validateOAuthLogin(profile.id, Provider.GOOGLE);
 
       //### 2 : UserDto로 생성
-      let usersDto:UserDtoCreate = {
+      /*let usersDto:UserDto = {
+        _id       : null,
         idToken   : profile.id,
         userName  : profile.displayName,
         authToken : jwt,
         email     : profile.emails[0].value,
-      };
+      };*/
+      let usersDto:UserDto = new UserDto(profile.emails[0].value, profile.id, jwt, profile.displayName);
 
       const user = { usersDto };
       done(null, user);

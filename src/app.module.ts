@@ -8,7 +8,8 @@ import { AuthService } from './Model/SocialLogin/auth/auth.service';
 import { PassportModule } from '@nestjs/passport';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ServerSetting } from "./Config/server-setting";
-import { UsersSchema } from './DTO/UserDto/user.schema';
+import { UsersSchema } from './Model/DTO/UserDto/user.schema';
+import { JwtStrategyService } from './Model/SocialLogin/jwt-strategy/jwt-strategy.service';
 
 @Module({
   imports: [
@@ -30,9 +31,24 @@ import { UsersSchema } from './DTO/UserDto/user.schema';
     [
       AppService,
 
+      /* *************************************************** */
+      /* Auth Service START */
+      /* *************************************************** */
       GoogleStrategyService,
-      UserDaoService,
+      JwtStrategyService,
       AuthService,
+      /* **************************************************** */
+      /* Auth Service END */
+      /* **************************************************** */
+
+      /* *************************************************** */
+      /* Users START */
+      /* *************************************************** */
+      UserDaoService,
+      /* **************************************************** */
+      /* Users END */
+      /* **************************************************** */
+
 
     ],
 })

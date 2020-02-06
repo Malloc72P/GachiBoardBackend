@@ -3,8 +3,8 @@ import { sign } from 'jsonwebtoken';
 
 import { UserDaoService } from '../../DAO/user-dao/user-dao.service';
 
-import { UserDtoIntf } from '../../../DTO/UserDto/user-dto-intf.interface';
-import { UserDto } from '../../../DTO/UserDto/user-dto';
+import { UserDtoIntf } from '../../DTO/UserDto/user-dto-intf.interface';
+import { UserDto } from '../../DTO/UserDto/user-dto';
 
 import { ServerSecret } from "../../../Config/server-secret";
 
@@ -55,7 +55,7 @@ export class AuthService {
     const encodedPayload: string = await sign(payload, this.JWT_SECRET_KEY);
     await this.userDao.findOne(payload.thirdPartyId)
       .then((data: UserDto)=>{
-        verifyFlag = ( data.authToken === encodedPayload );
+        verifyFlag = ( data.accessToken === encodedPayload );
       })
       .catch((err)=>{
         console.error(err);
@@ -64,7 +64,7 @@ export class AuthService {
     return verifyFlag;
   }
 
-  verifyAuthToken(authToken, idToken) : Promise<UserDtoIntf>{
+  verifyAccessToken(accessToken, idToken) : Promise<UserDtoIntf>{
     return this.userDao.findOne( idToken );
   }
 
