@@ -32,7 +32,7 @@ export class JwtStrategyService
         console.log("JwtStrategyService >> validate >> deprecated token");
         return done(new UnauthorizedException('deprecated token'), false);
       }
-      console.log("JwtStrategyService >> validate >> payload.thirdPartyId : ",payload.thirdPartyId);
+      //console.log("JwtStrategyService >> validate >> payload.thirdPartyId : ",payload);
 
       return done(null, payload.thirdPartyId);
     }

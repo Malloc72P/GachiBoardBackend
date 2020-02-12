@@ -51,7 +51,7 @@ export class AuthCallbackController {
         }
         //(1-2) 가입된 유저인 경우
         else{
-          this.userDao.update({_id : data.id}, usersDto)
+          this.userDao.update(data.id, usersDto)
             .then(()=>{
               this.redirectWithAccessToken(res, usersDto);
             })

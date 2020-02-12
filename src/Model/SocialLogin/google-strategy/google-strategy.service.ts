@@ -42,7 +42,8 @@ export class GoogleStrategyService extends PassportStrategy(Strategy, 'google')
         authToken : jwt,
         email     : profile.emails[0].value,
       };*/
-      let usersDto:UserDto = new UserDto(profile.emails[0].value, profile.id, jwt, profile.displayName);
+      let profileImg = profile.photos[0].value;
+      let usersDto:UserDto = new UserDto(profile.emails[0].value, profile.id, jwt, profile.displayName, profileImg);
 
       const user = { usersDto };
       done(null, user);

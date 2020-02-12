@@ -7,4 +7,5 @@ export interface UserDtoIntf extends Document{
   idToken    : string  ;
   accessToken  : string  ;
   userName   : string  ;
+  profileImg   : string  ;
 }

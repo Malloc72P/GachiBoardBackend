@@ -22,10 +22,12 @@ export class UserDaoService {
     return await this.usersModel.find().exec();
   }
   async findOne(idToken:string): Promise<any> {
-    return await this.usersModel.findOne({ idToken: idToken }).exec();
+    return await this.usersModel.findOne({ idToken: idToken })
+      .populate("participatingProjects")
+      .exec();
   }
   async update(_id, usersDto:UserDto): Promise<any> {
-    return await this.usersModel.updateOne(_id, usersDto).exec();
+    return await this.usersModel.updateOne({_id : _id}, usersDto).exec();
   }
 
 

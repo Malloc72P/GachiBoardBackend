@@ -1,13 +1,17 @@
 export class ServerSetting {
-  public static readonly dbDomain  =   "mongodb://localhost";
+  public static readonly serverDomain  =   "gachiboard.iptime.org";
+  public static readonly dbServerDomain  =   "localhost";
+  public static readonly serverProtocol  =   "http://";
+
+  public static readonly dbDomain  =   "mongodb://" + ServerSetting.dbServerDomain;
   public static readonly dbPort    =   ":27017";
   public static readonly dbName    =   "/Gachiboard";
 
 
-  public static readonly ngDomain  =   "http://localhost";
+  public static readonly ngDomain  =   ServerSetting.serverProtocol + ServerSetting.serverDomain;
   public static readonly ngPort    =   ":4200";
 
-  public static readonly nestDomain  =   "http://localhost";
+  public static readonly nestDomain  =   ServerSetting.serverProtocol + ServerSetting.serverDomain;
   public static readonly nestPort    =   ":5200";
 
   public static readonly dbUrl    = ServerSetting.dbDomain + ServerSetting.dbPort + ServerSetting.dbName;

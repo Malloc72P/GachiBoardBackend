@@ -10,6 +10,9 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ServerSetting } from "./Config/server-setting";
 import { UsersSchema } from './Model/DTO/UserDto/user.schema';
 import { JwtStrategyService } from './Model/SocialLogin/jwt-strategy/jwt-strategy.service';
+import { ProjectController } from './Controller/project/project.controller';
+import { ProjectSchema } from './Model/DTO/ProjectDto/project.schema';
+import { ProjectDaoService } from './Model/DAO/project-dao/project-dao.service';
 
 @Module({
   imports: [
@@ -17,14 +20,22 @@ import { JwtStrategyService } from './Model/SocialLogin/jwt-strategy/jwt-strateg
     MongooseModule.forRoot(ServerSetting.dbUrl),
     MongooseModule.forFeature(
         [
-            { name: "USERS_MODEL",
-              schema: UsersSchema }
+          {
+            name: "PROJECT_MODEL",
+            schema: ProjectSchema
+          },
+          {
+            name: "USERS_MODEL",
+            schema: UsersSchema
+          },
+
         ])
   ],
   controllers:
     [
       AppController,
       AuthCallbackController,
+      ProjectController
     ],
 
   providers:
@@ -47,6 +58,14 @@ import { JwtStrategyService } from './Model/SocialLogin/jwt-strategy/jwt-strateg
       UserDaoService,
       /* **************************************************** */
       /* Users END */
+      /* **************************************************** */
+
+      /* *************************************************** */
+      /* Project Dao START */
+      /* *************************************************** */
+      ProjectDaoService,
+      /* **************************************************** */
+      /* Project Dao END */
       /* **************************************************** */
 
 
