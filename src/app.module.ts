@@ -13,6 +13,8 @@ import { JwtStrategyService } from './Model/SocialLogin/jwt-strategy/jwt-strateg
 import { ProjectController } from './Controller/project/project.controller';
 import { ProjectSchema } from './Model/DTO/ProjectDto/project.schema';
 import { ProjectDaoService } from './Model/DAO/project-dao/project-dao.service';
+import {ProjectWebsocketGateway} from './SocketController/Project-WebSocket-gateway/project-websocket-gateway.gateway';
+import { ProjectSessionManagerService } from './Model/ProjectSessionManager/project-session-manager.service';
 
 @Module({
   imports: [
@@ -66,6 +68,22 @@ import { ProjectDaoService } from './Model/DAO/project-dao/project-dao.service';
       ProjectDaoService,
       /* **************************************************** */
       /* Project Dao END */
+      /* **************************************************** */
+
+      /* *************************************************** */
+      /* WebSocket START */
+      /* *************************************************** */
+      ProjectWebsocketGateway,
+      /* **************************************************** */
+      /* WebSocket END */
+      /* **************************************************** */
+
+      /* *************************************************** */
+      /* Project Session Manager Family START */
+      /* *************************************************** */
+      ProjectSessionManagerService
+      /* **************************************************** */
+      /* Project Session Manager Family END */
       /* **************************************************** */
 
 

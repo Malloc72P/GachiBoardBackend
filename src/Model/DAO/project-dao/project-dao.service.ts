@@ -1,16 +1,17 @@
 import { Model } from 'mongoose';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { UserDtoIntf } from '../../DTO/UserDto/user-dto-intf.interface';
 import { ProjectDtoIntf } from '../../DTO/ProjectDto/project-dto-int.interface';
 import { UserDto } from '../../DTO/UserDto/user-dto';
 import { ProjectDto } from '../../DTO/ProjectDto/project-dto';
+import { UserDaoService } from '../user-dao/user-dao.service';
 
 @Injectable()
 export class ProjectDaoService {
 
   constructor(
-    @InjectModel('PROJECT_MODEL') private readonly projectModel: Model<ProjectDtoIntf>
+    @InjectModel('PROJECT_MODEL') private readonly projectModel: Model<ProjectDtoIntf>,
+    private userDao:UserDaoService
   ){
 
   }
@@ -25,6 +26,51 @@ export class ProjectDaoService {
   async getList(): Promise<any>{
     return this.projectModel.find({});
   }
+
+  async findOne(_id:string): Promise<any> {
+    return await this.projectModel.findOne({ _id: _id })
+      .exec();
+  }
+
+  public getParticipantByUserDto(projectDto:ProjectDto, userDto:UserDto){
+    for (let i = 0; i < projectDto.participantList.length; i++) {
+      let value = projectDto.participantList[i];
+      if(value.idToken === userDto.idToken){
+        return value;
+      }
+    }
+    return false;
+  }
+
+  async update(_id, projectDto:ProjectDto): Promise<any> {
+    return await this.projectModel.updateOne({_id : _id}, projectDto).exec();
+  }
+  async testUpdate(_id, projectDto:ProjectDto): Promise<any> {
+
+  }
+
+  async verifyRequest(idToken, projectId): Promise<any>{
+    return new Promise<any>((resolve, reject)=>{
+      this.userDao.findOne(idToken).then((userDto:UserDto)=>{
+        if(!userDto){
+          reject(new Error("INVALID USER ID TOKEN DETECTED"));
+        }
+
+        this.findOne(projectId).then((projectDto:ProjectDto)=>{
+          if(!projectDto){
+            reject(new Error("INVALID PROJECT OBJECT_ID DETECTED"));
+          }
+          let resolveParam = {
+            userDto : userDto,
+            projectDto : projectDto
+          };
+          resolve(resolveParam);
+        })
+      });
+    });
+  }
+
+
 
 
 }

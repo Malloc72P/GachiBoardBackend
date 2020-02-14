@@ -34,7 +34,7 @@ export class AuthCallbackController {
     this.userDao.findOne(usersDto.idToken)
     //(1) api 요청 성공한 경우.
       .then( (data)=>{
-        console.log("AuthCallbackController >> findOne >> data : ",data);
+        //console.log("AuthCallbackController >> findOne >> data : ",data);
 
         //(1-1) 신규 가입인 경우
         if(data === null){
@@ -89,7 +89,7 @@ export class AuthCallbackController {
     let thirdPartId = req.user;
     this.userDao.findOne(thirdPartId)
       .then((userDto)=>{
-        console.log("AuthCallbackController >>  >> user : ",userDto);
+        //console.log("AuthCallbackController >>  >> user : ",userDto);
         if(userDto){
           res.status(HttpStatus.CREATED).send({userDto});
         }
