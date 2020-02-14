@@ -29,13 +29,7 @@ export class ProjectController {
       let newProjectDto = new ProjectDto();
       newProjectDto.projectTitle = projectDto.projectTitle;
 
-      let newParticipant = new ParticipantDto();
-      newParticipant.idToken = userDto.idToken;
-      newParticipant.email = userDto.email;
-      newParticipant.userName = userDto.userName;
-      newParticipant.authorityLevel = AuthorityLevel.PROJECT_MANAGER;
-      newParticipant.profileImg = userDto.profileImg;
-      newParticipant.startDate = new Date();
+      let newParticipant = ParticipantDto.createPriticipantDto(userDto);
 
       newProjectDto.participantList.push( newParticipant );
 

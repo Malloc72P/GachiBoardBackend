@@ -15,6 +15,7 @@ import { ProjectSchema } from './Model/DTO/ProjectDto/project.schema';
 import { ProjectDaoService } from './Model/DAO/project-dao/project-dao.service';
 import {ProjectWebsocketGateway} from './SocketController/Project-WebSocket-gateway/project-websocket-gateway.gateway';
 import { ProjectSessionManagerService } from './Model/ProjectSessionManager/project-session-manager.service';
+import { InviteCodeController } from './Controller/project/invite-code/invite-code.controller';
 
 @Module({
   imports: [
@@ -37,7 +38,8 @@ import { ProjectSessionManagerService } from './Model/ProjectSessionManager/proj
     [
       AppController,
       AuthCallbackController,
-      ProjectController
+      ProjectController,
+      InviteCodeController
     ],
 
   providers:
