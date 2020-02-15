@@ -78,6 +78,12 @@ export class HttpHelper {
     kanban : {
       create : new WebSocketRequest(
         "kanban_create", WebSocketTypeEnum.CREATE
+      ),
+      update : new WebSocketRequest(
+        "kanban_update", WebSocketTypeEnum.UPDATE
+      ),
+      delete : new WebSocketRequest(
+        "kanban_delete", WebSocketTypeEnum.DELETE
       )
     }
   };
