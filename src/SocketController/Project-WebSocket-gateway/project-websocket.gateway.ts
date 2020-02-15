@@ -54,6 +54,7 @@ export class ProjectWebsocketGateway implements OnGatewayConnection, OnGatewayDi
               if(!projectDto){
                 throw WebsocketValidationCheck.INVALID_PROJECT;
               }
+              console.log("ProjectWebsocketGateway >> projectDao >> findOne >> projectDto : ",projectDto);
               let participantDto = this.projectDao.getParticipantByUserDto(projectDto, userDto);
               if(!participantDto){
                 throw WebsocketValidationCheck.INVALID_PARTICIPANT;

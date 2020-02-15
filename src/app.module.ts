@@ -17,6 +17,10 @@ import {ProjectWebsocketGateway} from './SocketController/Project-WebSocket-gate
 import { ProjectSessionManagerService } from './Model/ProjectSessionManager/project-session-manager.service';
 import { InviteCodeController } from './Controller/project/invite-code/invite-code.controller';
 import { KanbanWebsocketGateway } from './SocketController/Kanban-WebSocket-gateway/kanban-websocket.gateway';
+import { KanbanItemSchema } from './Model/DTO/KanbanItemDto/kanban-item.schema';
+import { KanbanItemDaoService } from './Model/DAO/kanban-item-dao/kanban-item-dao.service';
+import { KanbanDataSchema } from './Model/DTO/KanbanDataDto/kanban-data.schema';
+import { KanbanDataDaoService } from './Model/DAO/kanban-data-dao/kanban-data-dao.service';
 
 @Module({
   imports: [
@@ -31,6 +35,14 @@ import { KanbanWebsocketGateway } from './SocketController/Kanban-WebSocket-gate
           {
             name: "USERS_MODEL",
             schema: UsersSchema
+          },
+          {
+            name: "KANBAN_ITEM_MODEL",
+            schema: KanbanItemSchema
+          },
+          {
+            name: "KANBAN_DATA_MODEL",
+            schema: KanbanDataSchema
           },
 
         ])
@@ -58,20 +70,16 @@ import { KanbanWebsocketGateway } from './SocketController/Kanban-WebSocket-gate
       /* **************************************************** */
 
       /* *************************************************** */
-      /* Users START */
+      /* Data Access Object START */
       /* *************************************************** */
       UserDaoService,
+      ProjectDaoService,
+      KanbanItemDaoService,
+      KanbanDataDaoService,
       /* **************************************************** */
-      /* Users END */
+      /* Data Access Object END */
       /* **************************************************** */
 
-      /* *************************************************** */
-      /* Project Dao START */
-      /* *************************************************** */
-      ProjectDaoService,
-      /* **************************************************** */
-      /* Project Dao END */
-      /* **************************************************** */
 
       /* *************************************************** */
       /* WebSocket START */

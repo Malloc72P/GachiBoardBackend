@@ -5,13 +5,14 @@ import { ProjectDtoIntf } from '../../DTO/ProjectDto/project-dto-int.interface';
 import { UserDto } from '../../DTO/UserDto/user-dto';
 import { ProjectDto } from '../../DTO/ProjectDto/project-dto';
 import { UserDaoService } from '../user-dao/user-dao.service';
+import { KanbanDataDaoService } from '../kanban-data-dao/kanban-data-dao.service';
 
 @Injectable()
 export class ProjectDaoService {
 
   constructor(
     @InjectModel('PROJECT_MODEL') private readonly projectModel: Model<ProjectDtoIntf>,
-    private userDao:UserDaoService
+    private userDao:UserDaoService,
   ){
 
   }
@@ -29,6 +30,17 @@ export class ProjectDaoService {
 
   async findOne(_id:string): Promise<any> {
     return await this.projectModel.findOne({ _id: _id })
+      .populate([
+        {
+          path  : "kanbanData",
+          model :  "KANBAN_DATA_MODEL",
+          populate  : [
+            { path : "todoGroup", model : "KANBAN_ITEM_MODEL" },
+            { path : "inProgressGroup", model : "KANBAN_ITEM_MODEL" },
+            { path : "doneGroup", model : "KANBAN_ITEM_MODEL" }
+          ]
+        }
+      ])
       .exec();
   }
 

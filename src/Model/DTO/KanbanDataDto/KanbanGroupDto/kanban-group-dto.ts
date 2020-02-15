@@ -1,4 +1,4 @@
-import {KanbanItemDto} from './KanbanItemDto/kanban-item-dto';
+import {KanbanItemDto} from '../../KanbanItemDto/kanban-item-dto';
 
 export class KanbanGroupDto {
   public title:string;

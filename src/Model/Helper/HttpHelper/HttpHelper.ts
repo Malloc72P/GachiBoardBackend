@@ -84,6 +84,9 @@ export class HttpHelper {
       ),
       delete : new WebSocketRequest(
         "kanban_delete", WebSocketTypeEnum.DELETE
+      ),
+      read : new WebSocketRequest(
+        "kanban_read", WebSocketTypeEnum.READ
       )
     }
   };

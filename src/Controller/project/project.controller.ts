@@ -6,13 +6,16 @@ import { AuthorityLevel } from '../../Model/DTO/ProjectDto/ParticipantDto/author
 import { UserDaoService } from '../../Model/DAO/user-dao/user-dao.service';
 import { ProjectDaoService } from '../../Model/DAO/project-dao/project-dao.service';
 import { UserDto } from '../../Model/DTO/UserDto/user-dto';
+import { KanbanDataDaoService } from '../../Model/DAO/kanban-data-dao/kanban-data-dao.service';
+import { KanbanDataDto } from '../../Model/DTO/KanbanDataDto/kanban-data-dto';
 
 @Controller('project')
 export class ProjectController {
 
   constructor(
     private userDao: UserDaoService,
-    private projectDaoService: ProjectDaoService
+    private projectDaoService: ProjectDaoService,
+    private kanbanDataDao:KanbanDataDaoService
   ){
 
   }
@@ -30,21 +33,27 @@ export class ProjectController {
       newProjectDto.projectTitle = projectDto.projectTitle;
 
       let newParticipant = ParticipantDto.createPriticipantDto(userDto);
-
       newProjectDto.participantList.push( newParticipant );
 
       newProjectDto.createdBy = userDto.idToken;
       newProjectDto.startDate = new Date();
 
-      this.projectDaoService.create(newProjectDto).then((createdProject)=>{
+      this.projectDaoService.create(newProjectDto).then((createdProject:ProjectDto)=>{
         console.log("ProjectController >>  >> data : ",createdProject);
 
         userDto.participatingProjects.push(createdProject._id);
         this.userDao.update( userDto._id, userDto ).then(()=>{
-          res.status(HttpStatus.CREATED).send(createdProject);
-        });
-      });
-    });
+
+          this.kanbanDataDao.create(new KanbanDataDto()).then((createdKanbanData:KanbanDataDto)=>{
+            createdProject.kanbanData = createdKanbanData._id;
+            this.projectDaoService.update(createdProject._id, createdProject)
+              .then((updateResult)=>{
+                res.status(HttpStatus.CREATED).send(createdProject);
+            }).catch((e)=>{console.log("ProjectController >> projectDaoService.update >> e : ",e);});
+          }).catch((e)=>{console.log("ProjectController >> kanbanDataDao.create >> e : ",e);});
+        }).catch((e)=>{console.log("ProjectController >> userDao.update >> e : ",e);});
+      }).catch((e)=>{console.log("ProjectController >> projectDaoService.create >> e : ",e);});
+    }).catch((e)=>{console.log("ProjectController >> userDao.findOne >> e : ",e);});
   }
 
   @Get()
