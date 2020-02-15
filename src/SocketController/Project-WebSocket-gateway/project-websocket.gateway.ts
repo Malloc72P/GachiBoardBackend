@@ -70,14 +70,9 @@ export class ProjectWebsocketGateway implements OnGatewayConnection, OnGatewayDi
                 .emit(HttpHelper.websocketApi.project.joinProject.event,
                   {participantDto : participantDto});
               projectDto.inviteCodeList = null;
-
-              socket.emit(HttpHelper.websocketApi.project.joinProject.event,
-                new WebsocketPacketDto(
-                  userDto.idToken,
-                  WebsocketPacketScopeEnum.PROJECT,
-                  projectDto._id,
-                  projectDto,
-                  WebsocketPacketActionEnum.SPECIAL,"join"));
+              let ackPacket = WebsocketPacketDto.createAckPacket(0, projectDto._id.toString());
+              ackPacket.dataDto = projectDto;
+              socket.emit(HttpHelper.websocketApi.project.joinProject.event, ackPacket);
 
 
             })
