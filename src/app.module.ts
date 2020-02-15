@@ -13,9 +13,10 @@ import { JwtStrategyService } from './Model/SocialLogin/jwt-strategy/jwt-strateg
 import { ProjectController } from './Controller/project/project.controller';
 import { ProjectSchema } from './Model/DTO/ProjectDto/project.schema';
 import { ProjectDaoService } from './Model/DAO/project-dao/project-dao.service';
-import {ProjectWebsocketGateway} from './SocketController/Project-WebSocket-gateway/project-websocket-gateway.gateway';
+import {ProjectWebsocketGateway} from './SocketController/Project-WebSocket-gateway/project-websocket.gateway';
 import { ProjectSessionManagerService } from './Model/ProjectSessionManager/project-session-manager.service';
 import { InviteCodeController } from './Controller/project/invite-code/invite-code.controller';
+import { KanbanWebsocketGateway } from './SocketController/Kanban-WebSocket-gateway/kanban-websocket.gateway';
 
 @Module({
   imports: [
@@ -76,6 +77,7 @@ import { InviteCodeController } from './Controller/project/invite-code/invite-co
       /* WebSocket START */
       /* *************************************************** */
       ProjectWebsocketGateway,
+      KanbanWebsocketGateway,
       /* **************************************************** */
       /* WebSocket END */
       /* **************************************************** */

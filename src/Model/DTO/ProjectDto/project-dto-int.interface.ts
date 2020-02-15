@@ -12,6 +12,5 @@ export interface ProjectDtoIntf extends Document{
   kanbanData;
   inviteCodeList:Array<InviteCodeDto>;
   participantList:Array<ParticipantDto>;
-  connectedParticipant:Array<ParticipantDto>;
   whiteboardSessionList:Array<WhiteboardSessionDto>;
 }

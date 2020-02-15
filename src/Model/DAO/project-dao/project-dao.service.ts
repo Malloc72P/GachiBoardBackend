@@ -49,7 +49,7 @@ export class ProjectDaoService {
 
   }
 
-  async verifyRequest(idToken, projectId): Promise<any>{
+  async verifyRequest(idToken, projectId, accessToken?:string): Promise<any>{
     return new Promise<any>((resolve, reject)=>{
       this.userDao.findOne(idToken).then((userDto:UserDto)=>{
         if(!userDto){
@@ -60,15 +60,21 @@ export class ProjectDaoService {
           if(!projectDto){
             reject(new Error("INVALID PROJECT OBJECT_ID DETECTED"));
           }
+          //여기까지 도달하면 projectDto와 userDto를 획득한 것
+          //SocketIO를 위해 AccessToken을 검사하는 코드 추가
+          if (accessToken && userDto.accessToken !== accessToken){
+            reject(new Error("AccessToken Expired!"));
+          }
           let resolveParam = {
             userDto : userDto,
             projectDto : projectDto
           };
           resolve(resolveParam);
-        })
-      });
+        })//then
+      })//then
     });
   }
+
 
 
 

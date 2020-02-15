@@ -8,6 +8,5 @@ export const ProjectSchema = new mongoose.Schema({
   kanbanData : { type: Object, required: true},
   inviteCodeList : { type: Array, required: true},
   participantList : { type: Array, required: true},
-  connectedParticipant : { type: Array, required: true},
   whiteboardSessionList : { type: Array, required: true},
 });

@@ -11,7 +11,6 @@ export class ProjectDto {
   public kanbanData:KanbanDataDto;
   public inviteCodeList:Array<InviteCodeDto>;
   public participantList:Array<ParticipantDto>;
-  public connectedParticipant:Array<ParticipantDto>;
   public whiteboardSessionList:Array<WhiteboardSessionDto>;
 
   constructor(){
