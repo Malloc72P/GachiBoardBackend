@@ -68,6 +68,29 @@ export class KanbanItemDaoService {
         });
     });
   }
+  async unlockKanban(packetDto:WebsocketPacketDto): Promise<any>{
+    return new Promise<any>((resolve, reject)=>{
+      let kanbanItemDto:KanbanItemDto = packetDto.dataDto as KanbanItemDto;
+      this.projectDao.verifyRequest(packetDto.senderIdToken, packetDto.namespaceValue, packetDto.accessToken)
+        .then((data)=>{
+          let userDto = data.userDto;
+          let projectDto = data.projectDto;
+          this.findOne(kanbanItemDto._id)
+            .then((foundKanbanItem:KanbanItemDto)=>{
+
+              foundKanbanItem.lockedBy = null;
+              this.update(foundKanbanItem._id, foundKanbanItem).then(()=>{
+                let resolveParam = {
+                  userDto : userDto,
+                  projectDto : projectDto,
+                  kanbanItemDto : foundKanbanItem
+                };
+                resolve(resolveParam);
+              });
+            })
+        });
+    });
+  }
 
   async relocateKanbanItem(packetDto:WebsocketPacketDto): Promise<any>{
     return new Promise<any>((resolve, reject)=>{

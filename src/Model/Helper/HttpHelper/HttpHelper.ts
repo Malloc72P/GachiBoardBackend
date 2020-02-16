@@ -27,7 +27,8 @@ export enum WebSocketTypeEnum {
   UPDATE,
   DELETE,
   RELOCATE,
-  LOCK
+  LOCK,
+  UNLOCK,
 }
 
 export enum WebsocketValidationCheck {
@@ -92,6 +93,9 @@ export class HttpHelper {
       ),
       lock : new WebSocketRequest(
         "kanban_lock", WebSocketTypeEnum.LOCK
+      ),
+      unlock : new WebSocketRequest(
+        "kanban_unlock", WebSocketTypeEnum.UNLOCK
       ),
       read : new WebSocketRequest(
         "kanban_read", WebSocketTypeEnum.READ

@@ -197,6 +197,26 @@ export class KanbanWebsocketGateway{
       })
   }
 
+  @SubscribeMessage(HttpHelper.websocketApi.kanban.unlock.event)
+  onKanbanItemUnlock(socket: Socket, packetDto:WebsocketPacketDto) {
+    let kanbanItemDto:KanbanItemDto = packetDto.dataDto as KanbanItemDto;
+    this.kanbanItemDao.unlockKanban(packetDto).then((data)=>{
+      let userDto = data.userDto;
+      let projectDto = data.projectDto;
+      let kanbanItemDto = data.kanbanItemDto;
+
+      packetDto.accessToken = null;
+      let ackPacket = WebsocketPacketDto.createAckPacket(packetDto.wsPacketSeq, projectDto._id.toString());
+      ackPacket.dataDto = packetDto.dataDto;
+
+      socket.emit(HttpHelper.websocketApi.kanban.unlock.event, ackPacket);
+      socket.broadcast.to(projectDto._id.toString()).emit(HttpHelper.websocketApi.kanban.unlock.event, packetDto);
+    })
+      .catch((e:RejectionEvent)=>{
+        this.wsKanbanErrHandler(e, socket, packetDto);
+      })
+  }
+
   @SubscribeMessage(HttpHelper.websocketApi.kanban.relocate.event)
   onKanbanItemRelocate(socket: Socket, packetDto:WebsocketPacketDto) {
     let kanbanItemDto:KanbanItemDto = packetDto.dataDto as KanbanItemDto;
