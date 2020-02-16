@@ -25,7 +25,8 @@ export enum WebSocketTypeEnum {
   CREATE,
   READ,
   UPDATE,
-  DELETE
+  DELETE,
+  LOCK
 }
 
 export enum WebsocketValidationCheck {
@@ -85,9 +86,12 @@ export class HttpHelper {
       delete : new WebSocketRequest(
         "kanban_delete", WebSocketTypeEnum.DELETE
       ),
+      lock : new WebSocketRequest(
+        "kanban_lock", WebSocketTypeEnum.LOCK
+      ),
       read : new WebSocketRequest(
         "kanban_read", WebSocketTypeEnum.READ
-      )
+      ),
     }
   };
 

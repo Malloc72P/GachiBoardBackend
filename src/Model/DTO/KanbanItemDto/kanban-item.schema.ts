@@ -5,5 +5,6 @@ export const KanbanItemSchema = new mongoose.Schema({
   userInfo    : { type: String, required: true},
   color       : { type: String, required: true},
   tagIdList   : Array,
-  parentGroup : { type: String, required: true }
+  parentGroup : { type: String, required: true },
+  lockedBy    : { type: String },
 });

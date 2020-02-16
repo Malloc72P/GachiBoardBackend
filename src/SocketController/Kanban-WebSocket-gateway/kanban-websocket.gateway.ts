@@ -11,6 +11,7 @@ import { KanbanItemDaoService } from '../../Model/DAO/kanban-item-dao/kanban-ite
 import { KanbanGroupEnum, KanbanItemDto } from '../../Model/DTO/KanbanItemDto/kanban-item-dto';
 import { KanbanDataDaoService } from '../../Model/DAO/kanban-data-dao/kanban-data-dao.service';
 import { KanbanDataDto } from '../../Model/DTO/KanbanDataDto/kanban-data-dto';
+import { RejectionEvent, RejectionEventEnum } from '../../Model/Helper/PromiseHelper/RejectionEvent';
 
 @WebSocketGateway()
 export class KanbanWebsocketGateway{
@@ -176,4 +177,29 @@ export class KanbanWebsocketGateway{
 
   }
 
+  @SubscribeMessage(HttpHelper.websocketApi.kanban.lock.event)
+  onKanbanItemLock(socket: Socket, packetDto:WebsocketPacketDto) {
+    let kanbanItemDto:KanbanItemDto = packetDto.dataDto as KanbanItemDto;
+    this.kanbanItemDao.lockKanban(packetDto).then((data)=>{
+      let userDto = data.userDto;
+      let projectDto = data.projectDto;
+      let kanbanItemDto = data.kanbanItemDto;
+
+      packetDto.accessToken = null;
+      let ackPacket = WebsocketPacketDto.createAckPacket(packetDto.wsPacketSeq, projectDto._id.toString());
+      ackPacket.dataDto = packetDto.dataDto;
+
+      socket.emit(HttpHelper.websocketApi.kanban.lock.event, ackPacket);
+      socket.broadcast.to(projectDto._id.toString()).emit(HttpHelper.websocketApi.kanban.lock.event, packetDto);
+    })
+      .catch((e:RejectionEvent)=>{
+        this.wsKanbanErrHandler(e, socket, packetDto);
+      })
+  }
+
+  wsKanbanErrHandler(rejection:RejectionEvent, socket:Socket, packetDto:WebsocketPacketDto){
+    console.warn("KanbanWebsocketGateway >> wsKanbanErrHandler >> reason : ",RejectionEventEnum[rejection.action]);
+    let nakPacket = WebsocketPacketDto.createNakPacket(packetDto.wsPacketSeq, packetDto.namespaceValue);
+    socket.emit(HttpHelper.websocketApi.kanban.lock.event, nakPacket);
+  }
 }

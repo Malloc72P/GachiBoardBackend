@@ -5,4 +5,5 @@ export interface KanbanItemDtoIntf extends Document{
   title     : string;
   userInfo  : string;
   color     : string;
+  lockedBy  : string;
 }
