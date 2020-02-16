@@ -89,7 +89,10 @@ export class KanbanItemDaoService {
                   fromGroup = this.getGroupObject(kanbanDataDto, kanbanItemDto.parentGroup);
                   toGroup = this.getGroupObject(kanbanDataDto, destGroupTitle);
                   let adjustedIdx = -1;
-                  if(toGroup.length <= destIdx){//재배치될 위치가 그룹 배열크기를 초과하는 경우 enqueue함
+                  if(!toGroup){
+                    adjustedIdx = 0;
+                  }
+                  else if(toGroup.length <= destIdx){//재배치될 위치가 그룹 배열크기를 초과하는 경우 enqueue함
                     adjustedIdx = toGroup.length;
                   }else{
                     adjustedIdx = destIdx;
