@@ -8,5 +8,7 @@ export class RejectionEvent {
   }
 }
 export enum RejectionEventEnum {
-  ALREADY_LOCKED
+  ALREADY_LOCKED,
+  LOCKED_BY_ANOTHER_USER,
+  DEBUGING
 }

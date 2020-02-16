@@ -30,6 +30,10 @@ export class KanbanDataDaoService {
       ])
       .exec();
   }
+  async findOneAndNoPopulate(_id): Promise<any> {
+    return await this.kanbanDataModel.findOne({ _id: _id })
+      .exec();
+  }
   async update(_id, kanbanDataDto:KanbanDataDto): Promise<any> {
     return await this.kanbanDataModel.updateOne({_id : _id}, kanbanDataDto).exec();
   }

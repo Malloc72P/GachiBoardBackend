@@ -26,6 +26,7 @@ export enum WebSocketTypeEnum {
   READ,
   UPDATE,
   DELETE,
+  RELOCATE,
   LOCK
 }
 
@@ -85,6 +86,9 @@ export class HttpHelper {
       ),
       delete : new WebSocketRequest(
         "kanban_delete", WebSocketTypeEnum.DELETE
+      ),
+      relocate : new WebSocketRequest(
+        "kanban_relocate", WebSocketTypeEnum.RELOCATE
       ),
       lock : new WebSocketRequest(
         "kanban_lock", WebSocketTypeEnum.LOCK
