@@ -29,4 +29,10 @@ export class KanbanItemDaoService {
     return await this.kanbanItemModel.updateOne({_id : _id}, kanbanItemDto).exec();
   }
 
+  async deleteOne(_id): Promise<any> {
+    return await this.kanbanItemModel.deleteOne({ _id: _id })
+      .exec();
+  }
+
+
 }

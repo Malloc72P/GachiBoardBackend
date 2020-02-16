@@ -20,7 +20,6 @@ export class ProjectDaoService {
   async create(createProjectDto: ProjectDto): Promise<any> {
 
     const createdProject = new this.projectModel(createProjectDto);
-    console.log("ProjectDaoService >> create >> createdProject : ",createdProject);
     return createdProject.save();
   }
 

@@ -86,17 +86,66 @@ export class KanbanWebsocketGateway{
 
   @SubscribeMessage(HttpHelper.websocketApi.kanban.delete.event)
   onKanbanItemDelete(socket: Socket, packetDto:WebsocketPacketDto) {
-    console.log("KanbanWebsocketGateway >> onKanbanItemDelete >> packetDto : ",packetDto);
+    let kanbanItemDto:KanbanItemDto = packetDto.dataDto as KanbanItemDto;
     this.projectDao.verifyRequest(packetDto.senderIdToken, packetDto.namespaceValue, packetDto.accessToken)
       .then((data)=>{
         let userDto = data.userDto;
         let projectDto = data.projectDto;
+        this.kanbanItemDao.deleteOne(kanbanItemDto._id)
+          .then(()=>{
+            this.kanbanDataDao.findOne(projectDto.kanbanData._id)
+              .then((kanbanData:KanbanDataDto)=>{
+                let groupEnum:KanbanGroupEnum = kanbanItemDto.parentGroup as KanbanGroupEnum;
 
-        packetDto.accessToken = null;
-        let ackPacket = WebsocketPacketDto.createAckPacket(packetDto.wsPacketSeq, projectDto._id.toString());
-        ackPacket.dataDto = packetDto.dataDto;
-        socket.emit(HttpHelper.websocketApi.kanban.delete.event, ackPacket);
-        socket.broadcast.to(projectDto._id.toString()).emit(HttpHelper.websocketApi.kanban.delete.event, packetDto);
+                let targetGroup:Array<any> = null;
+
+                switch (groupEnum) {
+                  case KanbanGroupEnum.TODO:
+                    targetGroup = kanbanData.todoGroup;
+                    break;
+                  case KanbanGroupEnum.IN_PROGRESS:
+                    targetGroup = kanbanData.inProgressGroup;
+                    break;
+                  case KanbanGroupEnum.DONE:
+                    targetGroup = kanbanData.doneGroup;
+                    break;
+                  default :
+                    return;
+                }
+                let index = -1;
+                for(let i = 0 ; i < targetGroup.length; i++){
+                  let currItem = targetGroup[i];
+
+                  if(currItem._id === kanbanItemDto._id){
+                    index = i;
+                    break;
+                  }
+                }
+
+                if(index >= 0){
+                  targetGroup.splice(index, 1);
+                }
+
+                this.kanbanDataDao.update(kanbanData._id, kanbanData)
+                  .then(()=>{
+                    packetDto.accessToken = null;
+                    let ackPacket = WebsocketPacketDto.createAckPacket(packetDto.wsPacketSeq, projectDto._id.toString());
+                    ackPacket.dataDto = packetDto.dataDto;
+                    socket.emit(HttpHelper.websocketApi.kanban.delete.event, ackPacket);
+                    socket.broadcast.to(projectDto._id.toString()).emit(HttpHelper.websocketApi.kanban.delete.event, packetDto);
+                  })
+                  .catch((e)=>{
+                    console.log("KanbanWebsocketGateway >> kanbanDataDao.update >> arguments : ",arguments);
+                  })
+
+              })
+              .catch((e)=>{
+                console.log("KanbanWebsocketGateway >> kanbanDataDao.findOne >> e : ",e);
+              });
+          })
+          .catch((e)=>{
+            console.log("KanbanWebsocketGateway >> anbanItemDao.deleteOne >> e : ",e);
+          });
       })
       .catch((e)=>{
         console.log("KanbanWebsocketGateway >> verifyRequest >> catch >> e : ",e);
