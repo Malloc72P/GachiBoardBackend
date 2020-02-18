@@ -1,5 +1,5 @@
 export class RejectionEvent {
-  action;
+  action:RejectionEventEnum;
   data;
 
   constructor(action, data?) {
@@ -10,5 +10,6 @@ export class RejectionEvent {
 export enum RejectionEventEnum {
   ALREADY_LOCKED,
   LOCKED_BY_ANOTHER_USER,
-  DEBUGING
+  DEBUGING,
+  RELOCATE_FAILED
 }

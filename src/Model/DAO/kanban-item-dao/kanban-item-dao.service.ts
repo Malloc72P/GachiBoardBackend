@@ -9,6 +9,7 @@ import { RejectionEvent, RejectionEventEnum } from '../../Helper/PromiseHelper/R
 import { KanbanDataDaoService } from '../kanban-data-dao/kanban-data-dao.service';
 import { KanbanDataDto } from '../../DTO/KanbanDataDto/kanban-data-dto';
 import { from } from 'rxjs';
+import { HttpHelper } from '../../Helper/HttpHelper/HttpHelper';
 
 @Injectable()
 export class KanbanItemDaoService {
@@ -31,6 +32,7 @@ export class KanbanItemDaoService {
   }
   async findOne(_id): Promise<any> {
     return await this.kanbanItemModel.findOne({ _id: _id })
+      .populate({path  : "tagIdList", model :  "KANBAN_TAG_MODEL",})
       .exec();
   }
   async update(_id, kanbanItemDto:KanbanItemDto): Promise<any> {
@@ -51,7 +53,7 @@ export class KanbanItemDaoService {
           let projectDto = data.projectDto;
           this.findOne(kanbanItemDto._id)
             .then((foundKanbanItem:KanbanItemDto)=>{
-              if(foundKanbanItem.lockedBy){
+              if(foundKanbanItem.lockedBy && foundKanbanItem.lockedBy !== userDto.idToken){
                 reject(new RejectionEvent(RejectionEventEnum.ALREADY_LOCKED, foundKanbanItem));
               }
 
@@ -152,9 +154,52 @@ export class KanbanItemDaoService {
                     });
               });
             })
-        });
+            .catch((e)=>{reject(new RejectionEvent(RejectionEventEnum.RELOCATE_FAILED, e));})
+        }).catch((e)=>{reject(new RejectionEvent(RejectionEventEnum.RELOCATE_FAILED, e));});
     });
   }
+
+  async updateKanbanItem(packetDto:WebsocketPacketDto): Promise<any>{
+      let kanbanItemDto:KanbanItemDto = packetDto.dataDto as KanbanItemDto;
+    return new Promise<any>((resolve, reject)=>{
+      this.projectDao.verifyRequest(packetDto.senderIdToken, packetDto.namespaceValue, packetDto.accessToken)
+        .then((data)=>{
+          let userDto = data.userDto;
+          let projectDto = data.projectDto;
+          this.findOne(kanbanItemDto._id).then((originKanbanItem:KanbanItemDto)=>{
+            originKanbanItem.title = kanbanItemDto.title;
+            originKanbanItem.color = kanbanItemDto.color;
+            originKanbanItem.userInfo = kanbanItemDto.userInfo;
+            console.log("KanbanItemDaoService >>  >> originKanbanItem : ",originKanbanItem);
+            if(!originKanbanItem.tagIdList){
+              console.log("KanbanItemDaoService >> !originKanbanItem.tagIdList >> 진입함");
+              originKanbanItem.tagIdList =  new Array<any>();
+            }else{
+              originKanbanItem.tagIdList.splice(0, originKanbanItem.tagIdList.length);
+            }
+            for(let tagId of kanbanItemDto.tagIdList){
+              console.log("KanbanItemDaoService >>  >> originKanbanItem : ",originKanbanItem);
+              originKanbanItem.tagIdList.push(tagId);
+            }
+
+            this.update(originKanbanItem._id, originKanbanItem)
+              .then(()=>{
+                this.findOne(kanbanItemDto._id)
+                  .then((populatedKanbanItemDto:KanbanItemDto)=>{
+                    let resolveParam = {
+                      userDto : userDto,
+                      projectDto : projectDto,
+                      kanbanItemDto : populatedKanbanItemDto
+                    };
+                    resolve(resolveParam);
+                  });
+              })
+          })
+        })
+    });
+  }
+
+
 
   getGroupObject(kanbanDataDto:KanbanDataDto, groupTitle){
     let switchEnum:KanbanGroupEnum = groupTitle as KanbanGroupEnum;

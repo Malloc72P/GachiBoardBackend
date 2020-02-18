@@ -5,5 +5,5 @@ export const KanbanDataSchema = new mongoose.Schema({
   inProgressGroup   :[ {type: mongoose.Schema.Types.ObjectId, ref: "KANBAN_ITEM_MODEL"} ],
   doneGroup         :[ {type: mongoose.Schema.Types.ObjectId, ref: "KANBAN_ITEM_MODEL"} ],
 
-  kanbanTagListDto:Array,
+  kanbanTagListDto  :[ {type: mongoose.Schema.Types.ObjectId, ref: "KANBAN_TAG_MODEL"} ],
 });

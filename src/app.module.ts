@@ -13,14 +13,16 @@ import { JwtStrategyService } from './Model/SocialLogin/jwt-strategy/jwt-strateg
 import { ProjectController } from './Controller/project/project.controller';
 import { ProjectSchema } from './Model/DTO/ProjectDto/project.schema';
 import { ProjectDaoService } from './Model/DAO/project-dao/project-dao.service';
-import {ProjectWebsocketGateway} from './SocketController/Project-WebSocket-gateway/project-websocket.gateway';
+import {ProjectWebsocketGateway} from './Controller-Socket/Project-WebSocket-gateway/project-websocket.gateway';
 import { ProjectSessionManagerService } from './Model/ProjectSessionManager/project-session-manager.service';
 import { InviteCodeController } from './Controller/project/invite-code/invite-code.controller';
-import { KanbanWebsocketGateway } from './SocketController/Kanban-WebSocket-gateway/kanban-websocket.gateway';
+import { KanbanWebsocketGateway } from './Controller-Socket/Kanban-WebSocket-gateway/kanban-websocket.gateway';
 import { KanbanItemSchema } from './Model/DTO/KanbanItemDto/kanban-item.schema';
 import { KanbanItemDaoService } from './Model/DAO/kanban-item-dao/kanban-item-dao.service';
 import { KanbanDataSchema } from './Model/DTO/KanbanDataDto/kanban-data.schema';
 import { KanbanDataDaoService } from './Model/DAO/kanban-data-dao/kanban-data-dao.service';
+import { KanbanTagDaoService } from './Model/DAO/kanban-tag-dao/kanban-tag-dao.service';
+import { KanbanTagSchema } from './Model/DTO/KanbanTagDto/kanban-tag.schema';
 
 @Module({
   imports: [
@@ -39,6 +41,10 @@ import { KanbanDataDaoService } from './Model/DAO/kanban-data-dao/kanban-data-da
           {
             name: "KANBAN_ITEM_MODEL",
             schema: KanbanItemSchema
+          },
+          {
+            name: "KANBAN_TAG_MODEL",
+            schema: KanbanTagSchema
           },
           {
             name: "KANBAN_DATA_MODEL",
@@ -76,6 +82,7 @@ import { KanbanDataDaoService } from './Model/DAO/kanban-data-dao/kanban-data-da
       ProjectDaoService,
       KanbanItemDaoService,
       KanbanDataDaoService,
+      KanbanTagDaoService,
       /* **************************************************** */
       /* Data Access Object END */
       /* **************************************************** */

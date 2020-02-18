@@ -24,9 +24,13 @@ export class KanbanDataDaoService {
   async findOne(_id): Promise<any> {
     return await this.kanbanDataModel.findOne({ _id: _id })
       .populate([
-        { path : "todoGroup",       model : "KANBAN_ITEM_MODEL" },
-        { path : "inProgressGroup", model : "KANBAN_ITEM_MODEL" },
-        { path : "doneGroup",       model : "KANBAN_ITEM_MODEL" }
+        { path : "todoGroup",       model : "KANBAN_ITEM_MODEL",
+          populate  : [{path  : "tagIdList", model :  "KANBAN_TAG_MODEL",}]},
+        { path : "inProgressGroup", model : "KANBAN_ITEM_MODEL",
+          populate  : [{path  : "tagIdList", model :  "KANBAN_TAG_MODEL",}]},
+        { path : "doneGroup",       model : "KANBAN_ITEM_MODEL",
+          populate  : [{path  : "tagIdList", model :  "KANBAN_TAG_MODEL",}]},
+        { path : "kanbanTagListDto",       model : "KANBAN_TAG_MODEL",}
       ])
       .exec();
   }

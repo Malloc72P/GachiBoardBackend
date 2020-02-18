@@ -42,4 +42,13 @@ export class WebsocketPacketDto {
     nakPacket.wsPacketSeq = seq;
     return nakPacket;
   }
+  public static createNormalPacket(projectId, event:WebsocketPacketActionEnum){
+    let normalPacket = new WebsocketPacketDto(
+      "admin", WebsocketPacketScopeEnum.PROJECT,
+      projectId,
+      {},
+      event);
+    normalPacket.wsPacketSeq = 0;
+    return normalPacket;
+  }
 }

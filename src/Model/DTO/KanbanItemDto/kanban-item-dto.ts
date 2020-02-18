@@ -4,7 +4,7 @@ export enum KanbanGroupEnum {
   DONE          = "DONE",
 }
 export class KanbanItemDto {
-  public _id:number;
+  public _id;
   public title:string;
   public userInfo;
   public color;
@@ -19,6 +19,7 @@ export class KanbanItemDto {
     this.color = color;
     this.tagIdList = tagIdList;
     this.parentGroup = parentGroup;
+    this.tagIdList = new Array<any>();
   }
 }
 
