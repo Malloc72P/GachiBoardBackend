@@ -308,6 +308,25 @@ export class KanbanWebsocketGateway{
         console.log("KanbanWebsocketGateway >>  >> e : ",e);
       });
   }
+  @SubscribeMessage(HttpHelper.websocketApi.kanban.delete_tag.event)
+  onKanbanTagDelete(socket: Socket, packetDto:WebsocketPacketDto) {
+    let kanbanTagDto:KanbanTagDto = packetDto.dataDto as KanbanTagDto;
+    this.kanbanTagDao.deleteKanbanTag(packetDto)
+      .then((resolveParam)=>{
+        let userDto         = resolveParam.userDto;
+        let projectDto      = resolveParam.projectDto;
+
+        packetDto.accessToken = null;
+        let ackPacket = WebsocketPacketDto.createAckPacket(packetDto.wsPacketSeq, packetDto.namespaceValue);
+        ackPacket.dataDto = packetDto.dataDto;
+
+        socket.emit(HttpHelper.websocketApi.kanban.delete_tag.event, ackPacket);
+        socket.broadcast.to(packetDto.namespaceValue.toString()).emit(HttpHelper.websocketApi.kanban.delete_tag.event, packetDto);
+      })
+      .catch((e)=>{
+        console.log("KanbanWebsocketGateway >>  >> e : ",e);
+      });
+  }
 
 
   wsKanbanErrHandler(rejection:RejectionEvent, socket:Socket, packetDto:WebsocketPacketDto, event){

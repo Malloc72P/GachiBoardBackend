@@ -34,9 +34,12 @@ export class ProjectDaoService {
           path  : "kanbanData",
           model :  "KANBAN_DATA_MODEL",
           populate  : [
-            { path : "todoGroup", model : "KANBAN_ITEM_MODEL" },
-            { path : "inProgressGroup", model : "KANBAN_ITEM_MODEL" },
-            { path : "doneGroup", model : "KANBAN_ITEM_MODEL" },
+            { path : "todoGroup", model : "KANBAN_ITEM_MODEL",
+              populate  : [{path  : "tagIdList", model :  "KANBAN_TAG_MODEL",}]},
+            { path : "inProgressGroup", model : "KANBAN_ITEM_MODEL",
+            populate  : [{path  : "tagIdList", model :  "KANBAN_TAG_MODEL",}]},
+            { path : "doneGroup", model : "KANBAN_ITEM_MODEL",
+            populate  : [{path  : "tagIdList", model :  "KANBAN_TAG_MODEL",}]},
             { path : "kanbanTagListDto", model : "KANBAN_TAG_MODEL" }
           ]
         }

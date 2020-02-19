@@ -79,7 +79,10 @@ export class KanbanItemDaoService {
           let projectDto = data.projectDto;
           this.findOne(kanbanItemDto._id)
             .then((foundKanbanItem:KanbanItemDto)=>{
-
+              if(userDto.idToken !== foundKanbanItem.lockedBy){
+                reject(new RejectionEvent(RejectionEventEnum.LOCKED_BY_ANOTHER_USER, foundKanbanItem));
+                return;
+              }
               foundKanbanItem.lockedBy = null;
               this.update(foundKanbanItem._id, foundKanbanItem).then(()=>{
                 let resolveParam = {
