@@ -8,5 +8,5 @@ export const ProjectSchema = new mongoose.Schema({
   kanbanData : { type: mongoose.Schema.Types.ObjectId, ref: "KANBAN_DATA_MODEL" },
   inviteCodeList : { type: Array, required: true},
   participantList : { type: Array, required: true},
-  whiteboardSessionList : { type: Array, required: true},
+  whiteboardSessionList : [{ type: mongoose.Schema.Types.ObjectId, ref: "WHITEBOARD_SESSION_MODEL" }],
 });

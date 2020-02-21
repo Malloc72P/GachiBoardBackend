@@ -23,6 +23,9 @@ import { KanbanDataSchema } from './Model/DTO/KanbanDataDto/kanban-data.schema';
 import { KanbanDataDaoService } from './Model/DAO/kanban-data-dao/kanban-data-dao.service';
 import { KanbanTagDaoService } from './Model/DAO/kanban-tag-dao/kanban-tag-dao.service';
 import { KanbanTagSchema } from './Model/DTO/KanbanTagDto/kanban-tag.schema';
+import { WhiteboardSessionSchema } from './Model/DTO/ProjectDto/WhiteboardSessionDto/whiteboard-session.schema';
+import { WbSessionWebsocketGateway } from './Controller-Socket/Wb-Session-WebSocket-gateway/wb-Session-websocket.gateway';
+import { WhiteboardSessionDaoService } from './Model/DAO/whiteboard-session-dao/whiteboard-session-dao.service';
 
 @Module({
   imports: [
@@ -49,6 +52,10 @@ import { KanbanTagSchema } from './Model/DTO/KanbanTagDto/kanban-tag.schema';
           {
             name: "KANBAN_DATA_MODEL",
             schema: KanbanDataSchema
+          },
+          {
+            name: "WHITEBOARD_SESSION_MODEL",
+            schema: WhiteboardSessionSchema
           },
 
         ])
@@ -83,6 +90,7 @@ import { KanbanTagSchema } from './Model/DTO/KanbanTagDto/kanban-tag.schema';
       KanbanItemDaoService,
       KanbanDataDaoService,
       KanbanTagDaoService,
+      WhiteboardSessionDaoService,
       /* **************************************************** */
       /* Data Access Object END */
       /* **************************************************** */
@@ -93,6 +101,7 @@ import { KanbanTagSchema } from './Model/DTO/KanbanTagDto/kanban-tag.schema';
       /* *************************************************** */
       ProjectWebsocketGateway,
       KanbanWebsocketGateway,
+      WbSessionWebsocketGateway,
       /* **************************************************** */
       /* WebSocket END */
       /* **************************************************** */

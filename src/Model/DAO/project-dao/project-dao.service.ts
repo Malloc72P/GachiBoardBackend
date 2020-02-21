@@ -42,7 +42,8 @@ export class ProjectDaoService {
             populate  : [{path  : "tagIdList", model :  "KANBAN_TAG_MODEL",}]},
             { path : "kanbanTagListDto", model : "KANBAN_TAG_MODEL" }
           ]
-        }
+        },
+        { path : "whiteboardSessionList", model : "WHITEBOARD_SESSION_MODEL"}
       ])
       .exec();
   }

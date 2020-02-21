@@ -37,6 +37,9 @@ export class ProjectWebsocketGateway implements OnGatewayConnection, OnGatewayDi
     let idToken = data.idToken;
     let accessToken = data.accessToken;
     let project_id = data.project_id;
+    console.log("ProjectWebsocketGateway >> onJoinProject >> idToken : ",idToken);
+    console.log("ProjectWebsocketGateway >> onJoinProject >> accessToken : ",accessToken);
+    console.log("ProjectWebsocketGateway >> onJoinProject >> project_id : ",project_id);
 
     console.log("ProjectWebsocketGateway >> onJoinProject >> socket : ",socket.id);
 

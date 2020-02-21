@@ -8,7 +8,7 @@ class ApiRequest {
   public uri: string;
   public requestType: ApiRequestTypeEnum;
 }
-class WebSocketRequest {
+export class WebSocketRequest {
   constructor(event, requestType){
     this.event = event;
     this.requestType = requestType;
@@ -33,6 +33,7 @@ export enum WebSocketTypeEnum {
   RELOCATE,
   LOCK,
   UNLOCK,
+  JOIN
 }
 
 export enum WebsocketValidationCheck {
@@ -104,6 +105,29 @@ export class HttpHelper {
       read : new WebSocketRequest(
         "kanban_read", WebSocketTypeEnum.READ
       ),
+    },
+    whiteboardSession : {
+      read : new WebSocketRequest(
+        "wbSession_read", WebSocketTypeEnum.READ
+      ),
+      create : new WebSocketRequest(
+        "wbSession_create", WebSocketTypeEnum.CREATE
+      ),
+      update : new WebSocketRequest(
+        "wbSession_update", WebSocketTypeEnum.UPDATE
+      ),
+      delete : new WebSocketRequest(
+        "wbSession_delete", WebSocketTypeEnum.DELETE
+      ),
+      lock : new WebSocketRequest(
+        "wbSession_lock", WebSocketTypeEnum.LOCK
+      ),
+      unlock : new WebSocketRequest(
+        "wbSession_unlock", WebSocketTypeEnum.UNLOCK
+      ),
+      join : new WebSocketRequest(
+        "wbSession_join",WebSocketTypeEnum.JOIN
+      )
     }
   };
 
