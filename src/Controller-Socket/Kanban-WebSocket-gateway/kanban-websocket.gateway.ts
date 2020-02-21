@@ -3,7 +3,7 @@ import { Server, Socket } from 'socket.io';
 import { HttpHelper } from '../../Model/Helper/HttpHelper/HttpHelper';
 import { UserDaoService } from '../../Model/DAO/user-dao/user-dao.service';
 import { ProjectDaoService } from '../../Model/DAO/project-dao/project-dao.service';
-import { ProjectSessionManagerService } from '../../Model/ProjectSessionManager/project-session-manager.service';
+import { ProjectSessionManagerService } from '../../Model/SessionManager/Session-Manager-Project/project-session-manager.service';
 import { WebsocketPacketDto } from '../../Model/DTO/WebsocketPacketDto/WebsocketPacketDto';
 import { KanbanItemDaoService } from '../../Model/DAO/kanban-item-dao/kanban-item-dao.service';
 import { KanbanGroupEnum, KanbanItemDto } from '../../Model/DTO/KanbanItemDto/kanban-item-dto';

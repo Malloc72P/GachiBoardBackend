@@ -14,7 +14,7 @@ import { ProjectController } from './Controller/project/project.controller';
 import { ProjectSchema } from './Model/DTO/ProjectDto/project.schema';
 import { ProjectDaoService } from './Model/DAO/project-dao/project-dao.service';
 import {ProjectWebsocketGateway} from './Controller-Socket/Project-WebSocket-gateway/project-websocket.gateway';
-import { ProjectSessionManagerService } from './Model/ProjectSessionManager/project-session-manager.service';
+import { ProjectSessionManagerService } from './Model/SessionManager/Session-Manager-Project/project-session-manager.service';
 import { InviteCodeController } from './Controller/project/invite-code/invite-code.controller';
 import { KanbanWebsocketGateway } from './Controller-Socket/Kanban-WebSocket-gateway/kanban-websocket.gateway';
 import { KanbanItemSchema } from './Model/DTO/KanbanItemDto/kanban-item.schema';
@@ -26,6 +26,7 @@ import { KanbanTagSchema } from './Model/DTO/KanbanTagDto/kanban-tag.schema';
 import { WhiteboardSessionSchema } from './Model/DTO/ProjectDto/WhiteboardSessionDto/whiteboard-session.schema';
 import { WbSessionWebsocketGateway } from './Controller-Socket/Wb-Session-WebSocket-gateway/wb-Session-websocket.gateway';
 import { WhiteboardSessionDaoService } from './Model/DAO/whiteboard-session-dao/whiteboard-session-dao.service';
+import { WhiteboardSessionManagerService } from './Model/SessionManager/Session-Manager-Whiteboard/whiteboard-session-manager.service';
 
 @Module({
   imports: [
@@ -109,7 +110,8 @@ import { WhiteboardSessionDaoService } from './Model/DAO/whiteboard-session-dao/
       /* *************************************************** */
       /* Project Session Manager Family START */
       /* *************************************************** */
-      ProjectSessionManagerService
+      ProjectSessionManagerService,
+      WhiteboardSessionManagerService,
       /* **************************************************** */
       /* Project Session Manager Family END */
       /* **************************************************** */

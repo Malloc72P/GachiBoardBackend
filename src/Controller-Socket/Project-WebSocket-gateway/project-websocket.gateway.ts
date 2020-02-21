@@ -5,7 +5,7 @@ import { ProjectDto } from '../../Model/DTO/ProjectDto/project-dto';
 import { UserDto } from '../../Model/DTO/UserDto/user-dto';
 import { UserDaoService } from '../../Model/DAO/user-dao/user-dao.service';
 import { ProjectDaoService } from '../../Model/DAO/project-dao/project-dao.service';
-import { ProjectSessionManagerService } from '../../Model/ProjectSessionManager/project-session-manager.service';
+import { ProjectSessionManagerService } from '../../Model/SessionManager/Session-Manager-Project/project-session-manager.service';
 import { WebsocketPacketDto } from '../../Model/DTO/WebsocketPacketDto/WebsocketPacketDto';
 import { WebsocketPacketActionEnum, WebsocketPacketScopeEnum } from '../../Model/DTO/WebsocketPacketDto/WebsocketPacketActionEnum';
 

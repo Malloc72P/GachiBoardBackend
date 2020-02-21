@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { ProjectDaoService } from '../DAO/project-dao/project-dao.service';
-import { ProjectDto } from '../DTO/ProjectDto/project-dto';
+import { ProjectDaoService } from '../../DAO/project-dao/project-dao.service';
+import { ProjectDto } from '../../DTO/ProjectDto/project-dto';
 import { ProjectSession } from './project-session/project-session';
-import { WebsocketConnection } from './Websocket-Connection/Websocket-Connection';
+import { WebsocketConnection } from '../Websocket-Connection/Websocket-Connection';
 import { Socket } from 'socket.io';
 
 @Injectable()
