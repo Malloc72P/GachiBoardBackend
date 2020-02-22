@@ -65,18 +65,25 @@ export class ProjectWebsocketGateway implements OnGatewayConnection, OnGatewayDi
               //#### 최종적으로 성공한 경우
               let projectNamespace = projectDto._id;
 
+              //사용자를 프로젝트 네입스페이스에 참가시킴
               socket.join(projectNamespace);
 
-              //this.projectSessionManagerService.addUser(project_id, userDto._id.toString());
+              //프로젝트 커넥션 풀에 사용자의 커넥션을 저장
               this.projectSessionManagerService.addConnection(socket, idToken, project_id);
-              socket.broadcast.to(projectNamespace)
-                .emit(HttpHelper.websocketApi.project.joinProject.event,
-                  {participantDto : participantDto});
               projectDto.inviteCodeList = null;
+
+              //ACK 패킷 생성 후 요청자에게 전달
               let ackPacket = WebsocketPacketDto.createAckPacket(0, projectDto._id.toString());
               ackPacket.dataDto = projectDto;
+              ackPacket.additionalData = this.projectSessionManagerService.getConnectedUserList(projectDto._id.toString());
               socket.emit(HttpHelper.websocketApi.project.joinProject.event, ackPacket);
 
+              //NormalPacket 생성 후 프로젝트 참가자들에게 브로드캐스트
+              let normalPacket = WebsocketPacketDto.createNormalPacket(projectDto._id.toString(), WebsocketPacketActionEnum.SPECIAL);
+              normalPacket.dataDto = projectDto;
+              normalPacket.additionalData = this.projectSessionManagerService.getConnectedUserList(projectDto._id.toString());
+              socket.broadcast.to(projectDto._id.toString())
+                .emit(HttpHelper.websocketApi.project.joinProject.event, normalPacket);
 
             })
             .catch((rejection)=>{
