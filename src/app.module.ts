@@ -31,7 +31,11 @@ import { WhiteboardSessionManagerService } from './Model/SessionManager/Session-
 @Module({
   imports: [
     PassportModule,
-    MongooseModule.forRoot(ServerSetting.dbUrl),
+    MongooseModule.forRoot(ServerSetting.dbUrl,
+      {
+        useNewUrlParser: true,
+        useUnifiedTopology : true,
+      }),
     MongooseModule.forFeature(
         [
           {
