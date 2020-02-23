@@ -8,7 +8,7 @@ import { CursorData } from './Whiteboard-Session-Instance/Cursor-Data/Cursor-Dat
 @Injectable()
 export class WhiteboardSessionManagerService {
   private readonly websocketConnectionPool:Array<WebsocketConnection>;
-  private wbSessionMap:Map<string, WhiteboardSessionInstance>;
+  public wbSessionMap:Map<string, WhiteboardSessionInstance>;
   constructor(){
     this.websocketConnectionPool = new Array<WebsocketConnection>();
     this.wbSessionMap = new Map<string, WhiteboardSessionInstance>();
