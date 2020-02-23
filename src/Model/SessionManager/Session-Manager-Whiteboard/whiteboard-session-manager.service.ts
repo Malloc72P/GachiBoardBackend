@@ -1,12 +1,17 @@
 import { Injectable } from '@nestjs/common';
-import { Socket } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 import { WebsocketConnection } from '../Websocket-Connection/Websocket-Connection';
+import { GachiPointDto } from '../../DTO/GachiPoint/Gachi-Point';
+import { WhiteboardSessionInstance } from './Whiteboard-Session-Instance/Whiteboard-Session-Instance';
+import { CursorData } from './Whiteboard-Session-Instance/Cursor-Data/Cursor-Data';
 
 @Injectable()
 export class WhiteboardSessionManagerService {
   private readonly websocketConnectionPool:Array<WebsocketConnection>;
+  private wbSessionMap:Map<string, WhiteboardSessionInstance>;
   constructor(){
     this.websocketConnectionPool = new Array<WebsocketConnection>();
+    this.wbSessionMap = new Map<string, WhiteboardSessionInstance>();
   }
   addConnection(socket:Socket, idToken, projectId){
     console.log("\nWhiteboardSessionManagerService >> addConnection >> 진입함");
@@ -53,6 +58,14 @@ export class WhiteboardSessionManagerService {
     }
     return userList;
   }
+  getConnectionByIdToken(idToken){
+    for(let connection of this.websocketConnectionPool){
+      if(connection.participantIdToken === idToken){
+        return connection;
+      }
+    }
+
+  }
 
   prettyPrintConnectionPool(){
     console.log("=====================================================");
@@ -61,4 +74,59 @@ export class WhiteboardSessionManagerService {
     }
     console.log("=====================================================");
   }
+
+  /* *************************************************** */
+  /* Cursor Data Handler START */
+  /* *************************************************** */
+  addCursorData(wsServerInstance:Server, wsConnection:WebsocketConnection, newPosition:GachiPointDto){
+    if(!this.wbSessionMap.has(wsConnection.namespaceString)){
+      this.wbSessionMap.set(wsConnection.namespaceString,
+        new WhiteboardSessionInstance(
+          wsServerInstance, wsConnection.namespaceString
+        ));
+    }
+    let wbSession:WhiteboardSessionInstance = this.wbSessionMap.get(wsConnection.namespaceString);
+    let i = wbSession.cursorDataArray.length;
+    while (i--) {
+      let currCursorData = wbSession.cursorDataArray[i];
+      if (currCursorData.idToken === wsConnection.participantIdToken) {
+        wbSession.cursorDataArray.splice(i, 1);
+      }
+    }
+    wbSession.cursorDataArray.push( new CursorData(wsConnection.participantIdToken, newPosition) );
+    wbSession.cursorDataVersion++;
+    //console.log("WhiteboardSessionManagerService >> addCursorData >> wbSession : ",wbSession.cursorDataArray);
+  }
+
+  removeCursorData(wsConnection:WebsocketConnection){
+    if(!this.wbSessionMap.has(wsConnection.namespaceString)){
+      return;
+    }
+    let wbSession:WhiteboardSessionInstance = this.wbSessionMap.get(wsConnection.namespaceString);
+    let i = wbSession.cursorDataArray.length;
+    while (i--) {
+      let currCursorData = wbSession.cursorDataArray[i];
+      if (currCursorData.idToken === wsConnection.participantIdToken) {
+        wbSession.cursorDataArray.splice(i, 1);
+        wbSession.cursorDataVersion++;
+      }
+    }
+  }
+
+  updateCursorData(wsConnection:WebsocketConnection, newPosition:GachiPointDto){
+    if(!this.wbSessionMap.has(wsConnection.namespaceString)){
+      return;
+    }
+    let wbSession:WhiteboardSessionInstance = this.wbSessionMap.get(wsConnection.namespaceString);
+
+    for(let currCursorData of wbSession.cursorDataArray){
+      if(currCursorData.idToken === wsConnection.participantIdToken){
+        currCursorData.position = newPosition;
+        break;
+      }
+    }
+  }
+  /* **************************************************** */
+  /* Cursor Data Handler END */
+  /* **************************************************** */
 }

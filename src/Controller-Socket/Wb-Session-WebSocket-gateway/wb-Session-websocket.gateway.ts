@@ -9,10 +9,11 @@ import { WhiteboardSessionDto } from '../../Model/DTO/ProjectDto/WhiteboardSessi
 import { WhiteboardSessionDaoService } from '../../Model/DAO/whiteboard-session-dao/whiteboard-session-dao.service';
 import { WhiteboardSessionManagerService } from '../../Model/SessionManager/Session-Manager-Whiteboard/whiteboard-session-manager.service';
 import { WebsocketConnection } from '../../Model/SessionManager/Websocket-Connection/Websocket-Connection';
+import { GachiPointDto } from '../../Model/DTO/GachiPoint/Gachi-Point';
 
 @WebSocketGateway()
 export class WbSessionWebsocketGateway implements OnGatewayDisconnect{
-
+  @WebSocketServer() server: Server;
   constructor(
     private userDao:UserDaoService,
     private projectDao:ProjectDaoService,
@@ -48,9 +49,6 @@ export class WbSessionWebsocketGateway implements OnGatewayDisconnect{
         })
     }
   }
-
-
-  @WebSocketServer() server: Server;
 
   @SubscribeMessage(HttpHelper.websocketApi.whiteboardSession.create.event)
   onWbSessionCreateRequest(socket: Socket, packetDto:WebsocketPacketDto) {
@@ -97,7 +95,6 @@ export class WbSessionWebsocketGateway implements OnGatewayDisconnect{
   @SubscribeMessage(HttpHelper.websocketApi.whiteboardSession.join.event)
   onWbSessionJoinRequest(socket: Socket, packetDto:WebsocketPacketDto) {
     let wbSessionDto:WhiteboardSessionDto = packetDto.dataDto as WhiteboardSessionDto;
-    console.log("WbSessionWebsocketGateway >> onWbSessionCreateRequest >> wbSessionDto : ",wbSessionDto);
 
     this.whiteboardSessionDao.joinWbSession(packetDto)
       .then((data)=>{
@@ -115,10 +112,10 @@ export class WbSessionWebsocketGateway implements OnGatewayDisconnect{
         }
         this.whiteboardSessionDao.update(foundWbSessionDto._id, foundWbSessionDto).then(()=>{
           packetDto.dataDto = foundWbSessionDto;
-          packetDto.additionalData = this.whiteboardSessionManagerService.getConnectedUserList(foundWbSessionDto._id);
+          packetDto.additionalData = userDto.idToken;
+          console.log("WbSessionWebsocketGateway >> onWbSessionJoinRequest >> packetDto : ",packetDto);
+          WbSessionWebsocketGateway.responseAckPacket( socket, HttpHelper.websocketApi.whiteboardSession.join, packetDto);
         });
-
-        WbSessionWebsocketGateway.responseAckPacket( socket, HttpHelper.websocketApi.whiteboardSession.join, packetDto);
       }).catch((e)=>{
       let reject = new RejectionEvent(RejectionEventEnum.JOINED_FAILED, e);
       this.wsErrHandler(reject, socket, packetDto, HttpHelper.websocketApi.whiteboardSession.join.event);
@@ -171,6 +168,19 @@ export class WbSessionWebsocketGateway implements OnGatewayDisconnect{
 
 
   }
+
+  @SubscribeMessage(HttpHelper.websocketApi.whiteboardSession.update_cursor.event)
+  onCursorDataRecv(socket: Socket, packetDto:WebsocketPacketDto) {
+    let cursorPosition:GachiPointDto = packetDto.dataDto as GachiPointDto;
+    let senderIdToken = packetDto.senderIdToken;
+
+    let wsConnection = this.whiteboardSessionManagerService.getConnectionByIdToken(senderIdToken);
+    this.whiteboardSessionManagerService.addCursorData(this.server, wsConnection, cursorPosition);
+    /*console.log("WbSessionWebsocketGateway >> onCursorDataRecv >> senderIdToken : ",senderIdToken);
+    console.log("WbSessionWebsocketGateway >> onCursorDataRecv >> cursorPosition : ",cursorPosition);*/
+
+  }
+
 
 
 
