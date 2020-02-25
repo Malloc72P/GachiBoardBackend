@@ -9,7 +9,7 @@ export class WebsocketPacketDto {
   public action:WebsocketPacketActionEnum;
   public accessToken:string;
   public additionalData;
-  public specialAction:string;
+  public specialAction:any;
 
   constructor(senderIdToken     : string,
               packetScope       : WebsocketPacketScopeEnum,

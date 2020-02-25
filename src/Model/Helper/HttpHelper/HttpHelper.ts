@@ -33,7 +33,14 @@ export enum WebSocketTypeEnum {
   RELOCATE,
   LOCK,
   UNLOCK,
-  JOIN
+  JOIN,
+  OCCUPIED,
+  NOT_OCCUPIED
+}
+
+export enum SpecialAction {
+  PASTE_COMPLETE,
+  RELOCATE_PASTE_COMPLETE
 }
 
 export enum WebsocketValidationCheck {
@@ -137,7 +144,37 @@ export class HttpHelper {
       remove_cursor : new WebSocketRequest(
         "wbSession_remove_cursor", WebSocketTypeEnum.DELETE
       ),
+    },
+    whiteboardItem : {
+      read : new WebSocketRequest(
+        "wbItem_read", WebSocketTypeEnum.READ
+      ),
+      create : new WebSocketRequest(
+        "wbItem_create", WebSocketTypeEnum.CREATE
+      ),
+      create_multiple : new WebSocketRequest(
+        "wbItem_create_multiple", WebSocketTypeEnum.CREATE
+      ),
+      update : new WebSocketRequest(
+        "wbItem_update", WebSocketTypeEnum.UPDATE
+      ),
+      delete : new WebSocketRequest(
+        "wbItem_delete", WebSocketTypeEnum.DELETE
+      ),
+      lock : new WebSocketRequest(
+        "wbItem_lock", WebSocketTypeEnum.LOCK
+      ),
+      unlock : new WebSocketRequest(
+        "wbItem_unlock", WebSocketTypeEnum.UNLOCK
+      ),
+      occupied : new WebSocketRequest(
+        "wbItem_lock", WebSocketTypeEnum.OCCUPIED
+      ),
+      notOccupied : new WebSocketRequest(
+        "wbItem_unlock", WebSocketTypeEnum.NOT_OCCUPIED
+      ),
     }
+
   };
 
 

@@ -27,6 +27,7 @@ import { WhiteboardSessionSchema } from './Model/DTO/ProjectDto/WhiteboardSessio
 import { WbSessionWebsocketGateway } from './Controller-Socket/Wb-Session-WebSocket-gateway/wb-Session-websocket.gateway';
 import { WhiteboardSessionDaoService } from './Model/DAO/whiteboard-session-dao/whiteboard-session-dao.service';
 import { WhiteboardSessionManagerService } from './Model/SessionManager/Session-Manager-Whiteboard/whiteboard-session-manager.service';
+import { WbWebsocketGateway } from './Controller-Socket/Wb-WebSocket-gateway/wb-websocket.gateway';
 
 @Module({
   imports: [
@@ -107,6 +108,7 @@ import { WhiteboardSessionManagerService } from './Model/SessionManager/Session-
       ProjectWebsocketGateway,
       KanbanWebsocketGateway,
       WbSessionWebsocketGateway,
+      WbWebsocketGateway,
       /* **************************************************** */
       /* WebSocket END */
       /* **************************************************** */
