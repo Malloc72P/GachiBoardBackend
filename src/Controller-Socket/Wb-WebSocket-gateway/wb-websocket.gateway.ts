@@ -6,6 +6,8 @@ import { ProjectDaoService } from '../../Model/DAO/project-dao/project-dao.servi
 import { RejectionEvent, RejectionEventEnum } from '../../Model/Helper/PromiseHelper/RejectionEvent';
 import { WebsocketPacketDto } from '../../Model/DTO/WebsocketPacketDto/WebsocketPacketDto';
 import { WhiteboardItemDto } from '../../Model/DTO/WhiteboardItemDto/whiteboard-item-dto';
+import { WhiteboardItemType } from '../../Model/Helper/data-type-enum/data-type.enum';
+import { EditableLinkDto } from '../../Model/DTO/WhiteboardItemDto/WhiteboardShapeDto/LinkPortDto/EditableLinkDto/editable-link-dto';
 
 @WebSocketGateway()
 export class WbWebsocketGateway{
@@ -35,10 +37,21 @@ export class WbWebsocketGateway{
   }
   @SubscribeMessage(HttpHelper.websocketApi.whiteboardItem.create_multiple.event)
   onWbItemMultipleCreateRequest(socket: Socket, packetDto:WebsocketPacketDto) {
+    let idMap:Map<any, any> = new Map<any, any>();
     console.log("WbWebsocketGateway >> onWbItemMultipleCreateRequest >> packetDto : ",packetDto);
     let wbItemArray:Array<WhiteboardItemDto> = packetDto.dataDto as Array<WhiteboardItemDto>;
     for(let wbItem of wbItemArray){
-        wbItem.id = WbWebsocketGateway.idGenerater;
+      idMap.set(wbItem.id, WbWebsocketGateway.idGenerater);
+      wbItem.id = idMap.get(wbItem.id);
+    }
+
+    for(let wbItem of wbItemArray){
+      if(wbItem.type === WhiteboardItemType.EDITABLE_LINK){
+        let edtLink:EditableLinkDto = wbItem as EditableLinkDto;
+        console.log("WbWebsocketGateway >> onWbItemMultipleCreateRequest >> edtLink : ",edtLink);
+        edtLink.fromLinkPort.ownerWbItemId = idMap.get(edtLink.fromLinkPort.ownerWbItemId);
+        edtLink.toLinkPort.ownerWbItemId = idMap.get(edtLink.toLinkPort.ownerWbItemId);
+      }
     }
     console.log("WbWebsocketGateway >> onWbItemCreateRequest >> packetDto : ",packetDto);
     WbWebsocketGateway.responseAckPacket( socket, HttpHelper.websocketApi.whiteboardItem.create_multiple, packetDto);
