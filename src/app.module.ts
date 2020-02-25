@@ -28,6 +28,8 @@ import { WbSessionWebsocketGateway } from './Controller-Socket/Wb-Session-WebSoc
 import { WhiteboardSessionDaoService } from './Model/DAO/whiteboard-session-dao/whiteboard-session-dao.service';
 import { WhiteboardSessionManagerService } from './Model/SessionManager/Session-Manager-Whiteboard/whiteboard-session-manager.service';
 import { WbWebsocketGateway } from './Controller-Socket/Wb-WebSocket-gateway/wb-websocket.gateway';
+import { WhiteboardItemDaoService } from './Model/DAO/whiteboard-item-dao/whiteboard-item-dao.service';
+import { WbItemPacketSchema } from './Model/DTO/WebsocketPacketDto/WbItemPacketDto/WbItemPacket.schema';
 
 @Module({
   imports: [
@@ -63,6 +65,10 @@ import { WbWebsocketGateway } from './Controller-Socket/Wb-WebSocket-gateway/wb-
             name: "WHITEBOARD_SESSION_MODEL",
             schema: WhiteboardSessionSchema
           },
+          {
+            name: "WHITEBOARD_ITEM_PACKET_MODEL",
+            schema: WbItemPacketSchema
+          },
 
         ])
   ],
@@ -97,6 +103,7 @@ import { WbWebsocketGateway } from './Controller-Socket/Wb-WebSocket-gateway/wb-
       KanbanDataDaoService,
       KanbanTagDaoService,
       WhiteboardSessionDaoService,
+      WhiteboardItemDaoService,
       /* **************************************************** */
       /* Data Access Object END */
       /* **************************************************** */
