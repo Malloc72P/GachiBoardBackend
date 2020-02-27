@@ -5,6 +5,6 @@ export const WhiteboardSessionSchema = new mongoose.Schema({
   createdBy           : { type: String, required: true},
   recentlyModifiedBy  : { type: String, required: true},
   startDate           : { type: Date, default: Date.now },
-  wbItemArray         : { type: Array, required: true},
+  wbItemArray         : [ {type: mongoose.Schema.Types.ObjectId, ref: "WHITEBOARD_ITEM_PACKET_MODEL"} ],
   connectedUsers      : { type: Array, required: true},
 });

@@ -31,6 +31,7 @@ export class WhiteboardSessionDaoService {
   }
   async findOne(_id:string): Promise<any> {
     return await this.wbSessionModel.findOne({ _id: _id })
+      .populate("wbItemArray")
       .exec();
   }
   async update(_id, wbSessionDto:WhiteboardSessionDto): Promise<any> {
