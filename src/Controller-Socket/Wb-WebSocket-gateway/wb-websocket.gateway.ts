@@ -8,6 +8,7 @@ import { WebsocketPacketDto } from '../../Model/DTO/WebsocketPacketDto/Websocket
 import { WhiteboardItemDto } from '../../Model/DTO/WhiteboardItemDto/whiteboard-item-dto';
 import { WhiteboardItemType } from '../../Model/Helper/data-type-enum/data-type.enum';
 import { EditableLinkDto } from '../../Model/DTO/WhiteboardItemDto/WhiteboardShapeDto/LinkPortDto/EditableLinkDto/editable-link-dto';
+import { WhiteboardItemDaoService } from '../../Model/DAO/whiteboard-item-dao/whiteboard-item-dao.service';
 
 @WebSocketGateway()
 export class WbWebsocketGateway{
@@ -15,6 +16,7 @@ export class WbWebsocketGateway{
   constructor(
     private userDao:UserDaoService,
     private projectDao:ProjectDaoService,
+    private whiteboardItemDao:WhiteboardItemDaoService,
     ){
 
   }
@@ -27,44 +29,70 @@ export class WbWebsocketGateway{
 
   @WebSocketServer() server: Server;
 
-
+  @SubscribeMessage(HttpHelper.websocketApi.whiteboardItem.read.event)
+  onWbItemGetListRequest(socket: Socket, packetDto:WebsocketPacketDto) {
+    this.whiteboardItemDao.getWbItemList(packetDto)
+      .then((resolveParam)=>{
+        let userDto = resolveParam.userDto;
+        let projectDto = resolveParam.projectDto;
+        let wbItemPacketList = resolveParam.wbItemList;
+        let wbItemDtoArray:Array<WhiteboardItemDto> = new Array<WhiteboardItemDto>();
+        for(let wbItemPacket of wbItemPacketList){
+            wbItemDtoArray.push(wbItemPacket.wbItemDto);
+        }
+        packetDto.dataDto = wbItemDtoArray;
+        WbWebsocketGateway.responseAckPacket( socket, HttpHelper.websocketApi.whiteboardItem.read, packetDto, wbItemPacketList);
+      });
+  }
   @SubscribeMessage(HttpHelper.websocketApi.whiteboardItem.create.event)
   onWbItemCreateRequest(socket: Socket, packetDto:WebsocketPacketDto) {
-    console.log("WbWebsocketGateway >> onWbItemCreateRequest >> packetDto : ",packetDto);
-    packetDto.dataDto["id"] = WbWebsocketGateway.idGenerater;
-    console.log("WbWebsocketGateway >> onWbItemCreateRequest >> packetDto : ",packetDto);
-    WbWebsocketGateway.responseAckPacket( socket, HttpHelper.websocketApi.whiteboardItem.create, packetDto);
+    this.whiteboardItemDao.saveWbItem(packetDto)
+      .then((resolveParam)=>{
+        let userDto = resolveParam.userDto;
+        let projectDto = resolveParam.projectDto;
+        let createdWbItemPacket = resolveParam.createdWbItemPacket;
+        packetDto.dataDto = createdWbItemPacket.wbItemDto;
+        WbWebsocketGateway.responseAckPacket( socket, HttpHelper.websocketApi.whiteboardItem.create, packetDto, createdWbItemPacket);
+      });
   }
+
   @SubscribeMessage(HttpHelper.websocketApi.whiteboardItem.create_multiple.event)
   onWbItemMultipleCreateRequest(socket: Socket, packetDto:WebsocketPacketDto) {
-    let idMap:Map<any, any> = new Map<any, any>();
-    console.log("WbWebsocketGateway >> onWbItemMultipleCreateRequest >> packetDto : ",packetDto);
-    let wbItemArray:Array<WhiteboardItemDto> = packetDto.dataDto as Array<WhiteboardItemDto>;
-    for(let wbItem of wbItemArray){
-      idMap.set(wbItem.id, WbWebsocketGateway.idGenerater);
-      wbItem.id = idMap.get(wbItem.id);
-    }
-
-    for(let wbItem of wbItemArray){
-      if(wbItem.type === WhiteboardItemType.EDITABLE_LINK){
-        let edtLink:EditableLinkDto = wbItem as EditableLinkDto;
-        console.log("WbWebsocketGateway >> onWbItemMultipleCreateRequest >> edtLink : ",edtLink);
-        edtLink.fromLinkPort.ownerWbItemId = idMap.get(edtLink.fromLinkPort.ownerWbItemId);
-        edtLink.toLinkPort.ownerWbItemId = idMap.get(edtLink.toLinkPort.ownerWbItemId);
-      }
-    }
-    console.log("WbWebsocketGateway >> onWbItemCreateRequest >> packetDto : ",packetDto);
-    WbWebsocketGateway.responseAckPacket( socket, HttpHelper.websocketApi.whiteboardItem.create_multiple, packetDto);
+    this.whiteboardItemDao.saveMultipleWbItem(packetDto)
+      .then((resolveParam)=>{
+        let userDto = resolveParam.userDto;
+        let projectDto = resolveParam.projectDto;
+        let createdWbItemPacket = resolveParam.createdWbItemPacket;
+        let wbItemArray:Array<WhiteboardItemDto> = new Array<WhiteboardItemDto>();
+        for(let wbItemPacket of createdWbItemPacket){
+            wbItemArray.push(wbItemPacket.wbItemDto);
+        }
+        packetDto.dataDto = wbItemArray;
+        packetDto.additionalData = createdWbItemPacket;
+        WbWebsocketGateway.responseAckPacket( socket, HttpHelper.websocketApi.whiteboardItem.create_multiple, packetDto);
+      });
   }
   @SubscribeMessage(HttpHelper.websocketApi.whiteboardItem.update.event)
   onWbItemUpdateRequest(socket: Socket, packetDto:WebsocketPacketDto) {
-    console.log("WbWebsocketGateway >> onWbItemUpdateRequest >> packetDto : ",packetDto);
-    WbWebsocketGateway.responseAckPacket( socket, HttpHelper.websocketApi.whiteboardItem.update, packetDto);
+    this.whiteboardItemDao.updateWbItem(packetDto)
+      .then((resolveParam)=>{
+        let userDto = resolveParam.userDto;
+        let projectDto = resolveParam.projectDto;
+        let updatedWbItemPacket = resolveParam.updatedWbItemPacket;
+        WbWebsocketGateway.responseAckPacket( socket, HttpHelper.websocketApi.whiteboardItem.update, packetDto, updatedWbItemPacket);
+      })
+      .catch((rejection)=>{
+        this.wsWbItemErrHandler(rejection, socket, packetDto, HttpHelper.websocketApi.whiteboardItem.create_multiple);
+      });
   }
   @SubscribeMessage(HttpHelper.websocketApi.whiteboardItem.delete.event)
   onWbItemDeleteRequest(socket: Socket, packetDto:WebsocketPacketDto) {
-    console.log("WbWebsocketGateway >> onWbItemDeleteRequest >> packetDto : ",packetDto);
-    WbWebsocketGateway.responseAckPacket( socket, HttpHelper.websocketApi.whiteboardItem.delete, packetDto);
+    this.whiteboardItemDao.deleteWbItem(packetDto)
+      .then((resolveParam)=>{
+        let userDto = resolveParam.userDto;
+        let projectDto = resolveParam.projectDto;
+        WbWebsocketGateway.responseAckPacket( socket, HttpHelper.websocketApi.whiteboardItem.delete, packetDto);
+      });
   }
   @SubscribeMessage(HttpHelper.websocketApi.whiteboardItem.unlock.event)
   onWbItemLockRequest(socket: Socket, packetDto:WebsocketPacketDto) {
@@ -101,6 +129,7 @@ export class WbWebsocketGateway{
 
   wsWbItemErrHandler(rejection:RejectionEvent, socket:Socket, packetDto:WebsocketPacketDto, event){
     console.warn("WbWebsocketGateway >> wsWbItemErrHandler >> reason : ",RejectionEventEnum[rejection.action]);
+    console.log("WbWebsocketGateway >> wsWbItemErrHandler >> rejection : ",rejection.data);
     if(rejection.action === RejectionEventEnum.DEBUGING){
       return;
     }

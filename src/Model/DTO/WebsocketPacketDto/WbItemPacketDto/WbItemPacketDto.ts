@@ -11,8 +11,7 @@ export class WbItemPacketDto {
   public createdDate:Date;
   public modifiedDate:Date;
 
-  constructor(id?, createdBy?, wbItemDto?: WhiteboardItemDto) {
-    this._id = id;
+  constructor(createdBy?, wbItemDto?: WhiteboardItemDto) {
     this.createdBy = createdBy;
     this.lastModifier = createdBy;
     this.version = 0;

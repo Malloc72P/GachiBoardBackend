@@ -7,6 +7,7 @@ import { WebsocketPacketDto } from '../../DTO/WebsocketPacketDto/WebsocketPacket
 import { ProjectDaoService } from '../project-dao/project-dao.service';
 import { UserDto } from '../../DTO/UserDto/user-dto';
 import { ProjectDto } from '../../DTO/ProjectDto/project-dto';
+import { UserDaoService } from '../user-dao/user-dao.service';
 
 @Injectable()
 export class WhiteboardSessionDaoService {
@@ -14,6 +15,7 @@ export class WhiteboardSessionDaoService {
   constructor(
     @InjectModel('WHITEBOARD_SESSION_MODEL') private readonly wbSessionModel: Model<WhiteboardSessionDtoIntf>,
     private projectDao:ProjectDaoService,
+    private userDao:UserDaoService
   ){
 
   }
@@ -111,5 +113,32 @@ export class WhiteboardSessionDaoService {
       additionalData: additionalData
     };
   }
+
+  async verifyRequest(idToken, wbSessionId, accessToken?:string): Promise<any>{
+    return new Promise<any>((resolve, reject)=>{
+      this.userDao.findOne(idToken).then((userDto:UserDto)=>{
+        if(!userDto){
+          reject(new Error("INVALID USER ID TOKEN DETECTED"));
+        }
+
+        this.findOne(wbSessionId).then((wbSessionDto:WhiteboardSessionDto)=>{
+          if(!wbSessionDto){
+            reject(new Error("INVALID WB_SESSION OBJECT_ID DETECTED"));
+          }
+          //여기까지 도달하면 wbSessionDto와 userDto를 획득한 것
+          //SocketIO를 위해 AccessToken을 검사하는 코드 추가
+          if (accessToken && userDto.accessToken !== accessToken){
+            reject(new Error("AccessToken Expired!"));
+          }
+          let resolveParam = {
+            userDto : userDto,
+            wbSessionDto : wbSessionDto
+          };
+          resolve(resolveParam);
+        })//then
+      })//then
+    });
+  }
+
 
 }
