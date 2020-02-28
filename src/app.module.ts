@@ -14,7 +14,7 @@ import { ProjectController } from './Controller/project/project.controller';
 import { ProjectSchema } from './Model/DTO/ProjectDto/project.schema';
 import { ProjectDaoService } from './Model/DAO/project-dao/project-dao.service';
 import {ProjectWebsocketGateway} from './Controller-Socket/Project-WebSocket-gateway/project-websocket.gateway';
-import { ProjectSessionManagerService } from './Model/ProjectSessionManager/project-session-manager.service';
+import { ProjectSessionManagerService } from './Model/SessionManager/Session-Manager-Project/project-session-manager.service';
 import { InviteCodeController } from './Controller/project/invite-code/invite-code.controller';
 import { KanbanWebsocketGateway } from './Controller-Socket/Kanban-WebSocket-gateway/kanban-websocket.gateway';
 import { KanbanItemSchema } from './Model/DTO/KanbanItemDto/kanban-item.schema';
@@ -23,11 +23,22 @@ import { KanbanDataSchema } from './Model/DTO/KanbanDataDto/kanban-data.schema';
 import { KanbanDataDaoService } from './Model/DAO/kanban-data-dao/kanban-data-dao.service';
 import { KanbanTagDaoService } from './Model/DAO/kanban-tag-dao/kanban-tag-dao.service';
 import { KanbanTagSchema } from './Model/DTO/KanbanTagDto/kanban-tag.schema';
+import { WhiteboardSessionSchema } from './Model/DTO/ProjectDto/WhiteboardSessionDto/whiteboard-session.schema';
+import { WbSessionWebsocketGateway } from './Controller-Socket/Wb-Session-WebSocket-gateway/wb-Session-websocket.gateway';
+import { WhiteboardSessionDaoService } from './Model/DAO/whiteboard-session-dao/whiteboard-session-dao.service';
+import { WhiteboardSessionManagerService } from './Model/SessionManager/Session-Manager-Whiteboard/whiteboard-session-manager.service';
+import { WbWebsocketGateway } from './Controller-Socket/Wb-WebSocket-gateway/wb-websocket.gateway';
+import { WhiteboardItemDaoService } from './Model/DAO/whiteboard-item-dao/whiteboard-item-dao.service';
+import { WbItemPacketSchema } from './Model/DTO/WebsocketPacketDto/WbItemPacketDto/WbItemPacket.schema';
 
 @Module({
   imports: [
     PassportModule,
-    MongooseModule.forRoot(ServerSetting.dbUrl),
+    MongooseModule.forRoot(ServerSetting.dbUrl,
+      {
+        useNewUrlParser: true,
+        useUnifiedTopology : true,
+      }),
     MongooseModule.forFeature(
         [
           {
@@ -49,6 +60,14 @@ import { KanbanTagSchema } from './Model/DTO/KanbanTagDto/kanban-tag.schema';
           {
             name: "KANBAN_DATA_MODEL",
             schema: KanbanDataSchema
+          },
+          {
+            name: "WHITEBOARD_SESSION_MODEL",
+            schema: WhiteboardSessionSchema
+          },
+          {
+            name: "WHITEBOARD_ITEM_PACKET_MODEL",
+            schema: WbItemPacketSchema
           },
 
         ])
@@ -83,6 +102,8 @@ import { KanbanTagSchema } from './Model/DTO/KanbanTagDto/kanban-tag.schema';
       KanbanItemDaoService,
       KanbanDataDaoService,
       KanbanTagDaoService,
+      WhiteboardSessionDaoService,
+      WhiteboardItemDaoService,
       /* **************************************************** */
       /* Data Access Object END */
       /* **************************************************** */
@@ -93,6 +114,8 @@ import { KanbanTagSchema } from './Model/DTO/KanbanTagDto/kanban-tag.schema';
       /* *************************************************** */
       ProjectWebsocketGateway,
       KanbanWebsocketGateway,
+      WbSessionWebsocketGateway,
+      WbWebsocketGateway,
       /* **************************************************** */
       /* WebSocket END */
       /* **************************************************** */
@@ -100,7 +123,8 @@ import { KanbanTagSchema } from './Model/DTO/KanbanTagDto/kanban-tag.schema';
       /* *************************************************** */
       /* Project Session Manager Family START */
       /* *************************************************** */
-      ProjectSessionManagerService
+      ProjectSessionManagerService,
+      WhiteboardSessionManagerService,
       /* **************************************************** */
       /* Project Session Manager Family END */
       /* **************************************************** */

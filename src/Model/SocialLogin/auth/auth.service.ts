@@ -40,7 +40,7 @@ export class AuthService {
         provider
       };
 
-      return sign(payload, this.JWT_SECRET_KEY, { expiresIn: 3600 });
+      return sign(payload, this.JWT_SECRET_KEY, { expiresIn: 18000 });
     }
     catch (err)
     {

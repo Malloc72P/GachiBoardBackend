@@ -8,7 +8,7 @@ class ApiRequest {
   public uri: string;
   public requestType: ApiRequestTypeEnum;
 }
-class WebSocketRequest {
+export class WebSocketRequest {
   constructor(event, requestType){
     this.event = event;
     this.requestType = requestType;
@@ -33,6 +33,14 @@ export enum WebSocketTypeEnum {
   RELOCATE,
   LOCK,
   UNLOCK,
+  JOIN,
+  OCCUPIED,
+  NOT_OCCUPIED
+}
+
+export enum SpecialAction {
+  PASTE_COMPLETE,
+  RELOCATE_PASTE_COMPLETE
 }
 
 export enum WebsocketValidationCheck {
@@ -104,7 +112,69 @@ export class HttpHelper {
       read : new WebSocketRequest(
         "kanban_read", WebSocketTypeEnum.READ
       ),
+    },
+    whiteboardSession : {
+      read : new WebSocketRequest(
+        "wbSession_read", WebSocketTypeEnum.READ
+      ),
+      create : new WebSocketRequest(
+        "wbSession_create", WebSocketTypeEnum.CREATE
+      ),
+      update : new WebSocketRequest(
+        "wbSession_update", WebSocketTypeEnum.UPDATE
+      ),
+      delete : new WebSocketRequest(
+        "wbSession_delete", WebSocketTypeEnum.DELETE
+      ),
+      lock : new WebSocketRequest(
+        "wbSession_lock", WebSocketTypeEnum.LOCK
+      ),
+      unlock : new WebSocketRequest(
+        "wbSession_unlock", WebSocketTypeEnum.UNLOCK
+      ),
+      join : new WebSocketRequest(
+        "wbSession_join",WebSocketTypeEnum.JOIN
+      ),
+      create_cursor : new WebSocketRequest(
+        "wbSession_create_cursor", WebSocketTypeEnum.CREATE
+      ),
+      update_cursor : new WebSocketRequest(
+        "wbSession_update_cursor", WebSocketTypeEnum.UPDATE
+      ),
+      remove_cursor : new WebSocketRequest(
+        "wbSession_remove_cursor", WebSocketTypeEnum.DELETE
+      ),
+    },
+    whiteboardItem : {
+      read : new WebSocketRequest(
+        "wbItem_read", WebSocketTypeEnum.READ
+      ),
+      create : new WebSocketRequest(
+        "wbItem_create", WebSocketTypeEnum.CREATE
+      ),
+      create_multiple : new WebSocketRequest(
+        "wbItem_create_multiple", WebSocketTypeEnum.CREATE
+      ),
+      update : new WebSocketRequest(
+        "wbItem_update", WebSocketTypeEnum.UPDATE
+      ),
+      delete : new WebSocketRequest(
+        "wbItem_delete", WebSocketTypeEnum.DELETE
+      ),
+      lock : new WebSocketRequest(
+        "wbItem_lock", WebSocketTypeEnum.LOCK
+      ),
+      unlock : new WebSocketRequest(
+        "wbItem_unlock", WebSocketTypeEnum.UNLOCK
+      ),
+      occupied : new WebSocketRequest(
+        "wbItem_lock", WebSocketTypeEnum.OCCUPIED
+      ),
+      notOccupied : new WebSocketRequest(
+        "wbItem_unlock", WebSocketTypeEnum.NOT_OCCUPIED
+      ),
     }
+
   };
 
 

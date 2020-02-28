@@ -1,5 +1,5 @@
-import { ProjectDto } from '../../DTO/ProjectDto/project-dto';
-import { ParticipantDto } from '../../DTO/ProjectDto/ParticipantDto/participant-dto';
+import { ProjectDto } from '../../../DTO/ProjectDto/project-dto';
+import { ParticipantDto } from '../../../DTO/ProjectDto/ParticipantDto/participant-dto';
 
 export class ProjectSession {
   public projectId;

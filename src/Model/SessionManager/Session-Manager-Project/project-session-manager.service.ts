@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { ProjectDaoService } from '../DAO/project-dao/project-dao.service';
-import { ProjectDto } from '../DTO/ProjectDto/project-dto';
+import { ProjectDaoService } from '../../DAO/project-dao/project-dao.service';
+import { ProjectDto } from '../../DTO/ProjectDto/project-dto';
 import { ProjectSession } from './project-session/project-session';
-import { WebsocketConnection } from './Websocket-Connection/Websocket-Connection';
+import { WebsocketConnection } from '../Websocket-Connection/Websocket-Connection';
 import { Socket } from 'socket.io';
 
 @Injectable()
@@ -45,5 +45,25 @@ export class ProjectSessionManagerService {
       }
     }
     return null
+  }
+  getConnectedUserList(objectId){
+    //console.log("WhiteboardSessionManagerService >> getConnectedUserList >> namespaceString : ",namespaceString);
+    this.prettyPrintConnectionPool();
+    let namespaceString = objectId.toString();
+    let userList = new Array<string>();
+    for(let connection of this.websocketConnectionPool){
+      if(connection.namespaceString === namespaceString){
+        userList.push(connection.participantIdToken);
+      }
+    }
+    return userList;
+  }
+
+  prettyPrintConnectionPool(){
+    console.log("=====================================================");
+    for(let connection of this.websocketConnectionPool){
+      console.log("prettyPrintConnectionPool >> connection : ",connection.toString());
+    }
+    console.log("=====================================================");
   }
 }
