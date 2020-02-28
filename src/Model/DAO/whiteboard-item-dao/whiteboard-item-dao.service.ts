@@ -163,21 +163,17 @@ export class WhiteboardItemDaoService {
               foundWbItemPacket.wbItemDto = wbItemDto;
 
               // let newTouchHistory = new TouchHistory(userDto.idToken, foundWbItemPacket.version, foundWbItemPacket.wbItemDto);
-              let newTouchHistory = new TouchHistory(userDto.idToken, foundWbItemPacket.version, null);
-              foundWbItemPacket.touchHistory.push(newTouchHistory);
+              // let newTouchHistory = new TouchHistory(userDto.idToken, foundWbItemPacket.version, null);
+              // foundWbItemPacket.touchHistory.push(newTouchHistory);
 
               this.update(foundWbItemPacket._id, foundWbItemPacket)
                 .then(()=>{
-                  wbSessionDto.wbItemArray.push(foundWbItemPacket._id);
-                  this.wbSessionDao.update(wbSessionDto._id, wbSessionDto)
-                    .then(()=>{
-                      let resolveParam = {
-                        userDto : userDto,
-                        wbSessionDto : wbSessionDto,
-                        updatedWbItemPacket : foundWbItemPacket
-                      };
-                      resolve(resolveParam);
-                    });
+                  let resolveParam = {
+                    userDto : userDto,
+                    wbSessionDto : wbSessionDto,
+                    updatedWbItemPacket : foundWbItemPacket
+                  };
+                  resolve(resolveParam);
                 })
                 .catch((e)=>{
                 reject(new RejectionEvent(RejectionEventEnum.UPDATE_FAILED, e))

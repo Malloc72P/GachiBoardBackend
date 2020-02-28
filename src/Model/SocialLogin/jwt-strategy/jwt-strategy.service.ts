@@ -23,6 +23,7 @@ export class JwtStrategyService
   async validate(payload, done: Function){
     try {
       console.log("JwtStrategyService > validate > 호출됨");
+      console.log("JwtStrategyService >> validate >> payload : ",payload);
       /*
       TODO 여기서 토큰 유효성검사를 수행해야함.
         DB에 저장된 토큰값과 비교하는 작업을 여기서 해야할 것으로 보임.

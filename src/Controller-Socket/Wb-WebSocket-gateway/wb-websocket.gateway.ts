@@ -82,7 +82,7 @@ export class WbWebsocketGateway{
         WbWebsocketGateway.responseAckPacket( socket, HttpHelper.websocketApi.whiteboardItem.update, packetDto, updatedWbItemPacket);
       })
       .catch((rejection)=>{
-        this.wsWbItemErrHandler(rejection, socket, packetDto, HttpHelper.websocketApi.whiteboardItem.create_multiple);
+        this.wsWbItemErrHandler(rejection, socket, packetDto, HttpHelper.websocketApi.whiteboardItem.update);
       });
   }
   @SubscribeMessage(HttpHelper.websocketApi.whiteboardItem.delete.event)
