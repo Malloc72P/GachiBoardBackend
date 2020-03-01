@@ -189,6 +189,95 @@ export class WhiteboardItemDaoService {
         });
     });
   }
+  async occupyItem(packetDto:WebsocketPacketDto): Promise<any>{
+    return new Promise<any>((resolve, reject)=>{
+      let wbItemDto:WhiteboardItemDto = packetDto.dataDto as WhiteboardItemDto;
+      this.wbSessionDao.verifyRequest(packetDto.senderIdToken, packetDto.namespaceValue, packetDto.accessToken)
+        .then((data)=>{
+          let userDto = data.userDto;
+          let wbSessionDto = data.wbSessionDto;
+          let wbItemPacket:WbItemPacketDto;
+
+          this.findOne(wbItemDto.id)
+            .then((foundWbItemPacket:WbItemPacketDto)=>{
+              // foundWbItemPacket.wbItemDto.id = foundWbItemPacket._id;
+              console.log("WhiteboardItemDaoService >> occupyItem >> foundWbItemPacket : ",foundWbItemPacket);
+              if(foundWbItemPacket.occupiedBy && foundWbItemPacket.occupiedBy !== userDto.idToken){
+                reject(new RejectionEvent(RejectionEventEnum.OCCUPIED_BY_ANOTHER_USER, foundWbItemPacket));
+                return;
+              }
+              foundWbItemPacket.occupiedBy = userDto.idToken;
+
+              this.update(foundWbItemPacket._id, foundWbItemPacket)
+                .then(()=>{
+                  let resolveParam = {
+                    userDto : userDto,
+                    wbSessionDto : wbSessionDto,
+                    updatedWbItemPacket : foundWbItemPacket
+                  };
+                  resolve(resolveParam);
+                })
+                .catch((e)=>{
+                  reject(new RejectionEvent(RejectionEventEnum.UPDATE_FAILED, e))
+                });
+            })
+            .catch((e)=>{
+              reject(new RejectionEvent(RejectionEventEnum.UPDATE_FAILED, e))
+            });
+
+        })
+        .catch((e)=>{
+          reject(new RejectionEvent(RejectionEventEnum.UPDATE_FAILED, e))
+        });
+    });
+  }
+  async notOccupyItem(packetDto:WebsocketPacketDto): Promise<any>{
+    return new Promise<any>((resolve, reject)=>{
+      let wbItemDto:WhiteboardItemDto = packetDto.dataDto as WhiteboardItemDto;
+      this.wbSessionDao.verifyRequest(packetDto.senderIdToken, packetDto.namespaceValue, packetDto.accessToken)
+        .then((data)=>{
+          let userDto = data.userDto;
+          let wbSessionDto = data.wbSessionDto;
+          let wbItemPacket:WbItemPacketDto;
+
+          this.findOne(wbItemDto.id)
+            .then((foundWbItemPacket:WbItemPacketDto)=>{
+              // foundWbItemPacket.wbItemDto.id = foundWbItemPacket._id;
+              console.log("WhiteboardItemDaoService >> occupyItem >> foundWbItemPacket : ",foundWbItemPacket);
+              if(!foundWbItemPacket.occupiedBy){
+                reject(new RejectionEvent(RejectionEventEnum.NOT_OCCUPIED, foundWbItemPacket));
+                return;
+              }
+              if(foundWbItemPacket.occupiedBy && foundWbItemPacket.occupiedBy !== userDto.idToken){
+                reject(new RejectionEvent(RejectionEventEnum.OCCUPIED_BY_ANOTHER_USER, foundWbItemPacket));
+                return;
+              }
+              foundWbItemPacket.occupiedBy = null;
+
+              this.update(foundWbItemPacket._id, foundWbItemPacket)
+                .then(()=>{
+                  let resolveParam = {
+                    userDto : userDto,
+                    wbSessionDto : wbSessionDto,
+                    updatedWbItemPacket : foundWbItemPacket
+                  };
+                  resolve(resolveParam);
+                })
+                .catch((e)=>{
+                  reject(new RejectionEvent(RejectionEventEnum.UPDATE_FAILED, e))
+                });
+            })
+            .catch((e)=>{
+              reject(new RejectionEvent(RejectionEventEnum.UPDATE_FAILED, e))
+            });
+
+        })
+        .catch((e)=>{
+          reject(new RejectionEvent(RejectionEventEnum.UPDATE_FAILED, e))
+        });
+    });
+  }
+
   async deleteWbItem(packetDto:WebsocketPacketDto): Promise<any>{
     return new Promise<any>((resolve, reject)=>{
       let wbItemDto:WhiteboardItemDto = packetDto.dataDto as WhiteboardItemDto;

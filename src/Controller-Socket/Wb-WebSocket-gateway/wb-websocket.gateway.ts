@@ -31,6 +31,7 @@ export class WbWebsocketGateway{
 
   @SubscribeMessage(HttpHelper.websocketApi.whiteboardItem.read.event)
   onWbItemGetListRequest(socket: Socket, packetDto:WebsocketPacketDto) {
+    console.log("WbWebsocketGateway >> onWbItemGetListRequest >> 진입함");
     this.whiteboardItemDao.getWbItemList(packetDto)
       .then((resolveParam)=>{
         let userDto = resolveParam.userDto;
@@ -46,6 +47,7 @@ export class WbWebsocketGateway{
   }
   @SubscribeMessage(HttpHelper.websocketApi.whiteboardItem.create.event)
   onWbItemCreateRequest(socket: Socket, packetDto:WebsocketPacketDto) {
+    console.log("WbWebsocketGateway >> onWbItemCreateRequest >> 진입함");
     this.whiteboardItemDao.saveWbItem(packetDto)
       .then((resolveParam)=>{
         let userDto = resolveParam.userDto;
@@ -58,6 +60,7 @@ export class WbWebsocketGateway{
 
   @SubscribeMessage(HttpHelper.websocketApi.whiteboardItem.create_multiple.event)
   onWbItemMultipleCreateRequest(socket: Socket, packetDto:WebsocketPacketDto) {
+    console.log("WbWebsocketGateway >> onWbItemMultipleCreateRequest >> 진입함");
     this.whiteboardItemDao.saveMultipleWbItem(packetDto)
       .then((resolveParam)=>{
         let userDto = resolveParam.userDto;
@@ -74,6 +77,7 @@ export class WbWebsocketGateway{
   }
   @SubscribeMessage(HttpHelper.websocketApi.whiteboardItem.update.event)
   onWbItemUpdateRequest(socket: Socket, packetDto:WebsocketPacketDto) {
+    console.log("WbWebsocketGateway >> onWbItemUpdateRequest >> 진입함");
     this.whiteboardItemDao.updateWbItem(packetDto)
       .then((resolveParam)=>{
         let userDto = resolveParam.userDto;
@@ -82,11 +86,12 @@ export class WbWebsocketGateway{
         WbWebsocketGateway.responseAckPacket( socket, HttpHelper.websocketApi.whiteboardItem.update, packetDto, updatedWbItemPacket);
       })
       .catch((rejection)=>{
-        this.wsWbItemErrHandler(rejection, socket, packetDto, HttpHelper.websocketApi.whiteboardItem.update);
+        this.wsWbItemErrHandler(rejection, socket, packetDto, HttpHelper.websocketApi.whiteboardItem.update.event);
       });
   }
   @SubscribeMessage(HttpHelper.websocketApi.whiteboardItem.delete.event)
   onWbItemDeleteRequest(socket: Socket, packetDto:WebsocketPacketDto) {
+    console.log("WbWebsocketGateway >> onWbItemDeleteRequest >> 진입함");
     this.whiteboardItemDao.deleteWbItem(packetDto)
       .then((resolveParam)=>{
         let userDto = resolveParam.userDto;
@@ -96,25 +101,55 @@ export class WbWebsocketGateway{
   }
   @SubscribeMessage(HttpHelper.websocketApi.whiteboardItem.unlock.event)
   onWbItemLockRequest(socket: Socket, packetDto:WebsocketPacketDto) {
+    console.log("WbWebsocketGateway >> onWbItemLockRequest >> 진입함");
     WbWebsocketGateway.responseAckPacket( socket, HttpHelper.websocketApi.whiteboardItem.unlock, packetDto);
   }
   @SubscribeMessage(HttpHelper.websocketApi.whiteboardItem.lock.event)
   onWbItemUnlockRequest(socket: Socket, packetDto:WebsocketPacketDto) {
+    console.log("WbWebsocketGateway >> onWbItemUnlockRequest >> 진입함");
     WbWebsocketGateway.responseAckPacket( socket, HttpHelper.websocketApi.whiteboardItem.lock, packetDto);
   }
 
   @SubscribeMessage(HttpHelper.websocketApi.whiteboardItem.occupied.event)
   onWbItemOccupiedRequest(socket: Socket, packetDto:WebsocketPacketDto) {
-    WbWebsocketGateway.responseAckPacket( socket, HttpHelper.websocketApi.whiteboardItem.occupied, packetDto);
+    console.log("WbWebsocketGateway >> onWbItemOccupiedRequest >> 진입함");
+    this.whiteboardItemDao.occupyItem(packetDto)
+      .then((resolveParam)=>{
+        console.log("WbWebsocketGateway >> onWbItemOccupiedRequest >> 진입함");
+        let userDto = resolveParam.userDto;
+        let projectDto = resolveParam.projectDto;
+        let updatedWbItemPacket = resolveParam.updatedWbItemPacket;
+        packetDto.dataDto = updatedWbItemPacket.wbItemDto;
+        WbWebsocketGateway.responseAckPacket( socket, HttpHelper.websocketApi.whiteboardItem.occupied, packetDto, updatedWbItemPacket);
+      })
+      .catch((rejection)=>{
+        this.wsWbItemErrHandler(rejection, socket, packetDto, HttpHelper.websocketApi.whiteboardItem.occupied.event);
+      });
   }
   @SubscribeMessage(HttpHelper.websocketApi.whiteboardItem.notOccupied.event)
   onWbItemNotOccupiedRequest(socket: Socket, packetDto:WebsocketPacketDto) {
-    WbWebsocketGateway.responseAckPacket( socket, HttpHelper.websocketApi.whiteboardItem.notOccupied, packetDto);
+    console.log("WbWebsocketGateway >> onWbItemNotOccupiedRequest >> 진입함");
+    this.whiteboardItemDao.notOccupyItem(packetDto)
+      .then((resolveParam)=>{
+        console.log("WbWebsocketGateway >> onWbItemNotOccupiedRequest >> 진입함");
+        let userDto = resolveParam.userDto;
+        let projectDto = resolveParam.projectDto;
+        let updatedWbItemPacket = resolveParam.updatedWbItemPacket;
+        packetDto.dataDto = updatedWbItemPacket.wbItemDto;
+
+        WbWebsocketGateway.responseAckPacket( socket, HttpHelper.websocketApi.whiteboardItem.notOccupied, packetDto, updatedWbItemPacket);
+      })
+      .catch((rejection)=>{
+        this.wsWbItemErrHandler(rejection, socket, packetDto, HttpHelper.websocketApi.whiteboardItem.occupied.event);
+      });
+
   }
 
 
 
   private static responseAckPacket(socket:Socket, webSocketRequest:WebSocketRequest, packetDto:WebsocketPacketDto,  additionalData?){
+    console.log("WbWebsocketGateway >> responseAckPacket >> 진입함");
+    console.log("WbWebsocketGateway >> responseAckPacket >> packetDto : ",packetDto);
     let ackPacket = WebsocketPacketDto.createAckPacket(packetDto.wsPacketSeq, packetDto.namespaceValue);
     ackPacket.dataDto = packetDto.dataDto;
     ackPacket.additionalData = packetDto.additionalData;
@@ -143,6 +178,14 @@ export class WbWebsocketGateway{
       case RejectionEventEnum.LOCKED_BY_ANOTHER_USER:
         nakPacket = WebsocketPacketDto.createNakPacket(packetDto.wsPacketSeq, packetDto.namespaceValue);
         nakPacket.additionalData = RejectionEventEnum.LOCKED_BY_ANOTHER_USER;
+        socket.emit(event, nakPacket);
+        break;
+      case RejectionEventEnum.OCCUPIED_BY_ANOTHER_USER:
+        console.log("WbWebsocketGateway >> wsWbItemErrHandler >> OCCUPIED_BY_ANOTHER_USER >> 진입함");
+        nakPacket = WebsocketPacketDto.createNakPacket(packetDto.wsPacketSeq, packetDto.namespaceValue);
+        nakPacket.dataDto = packetDto.dataDto;
+        nakPacket.additionalData = rejection.data;
+        nakPacket.specialAction = RejectionEventEnum.LOCKED_BY_ANOTHER_USER;
         socket.emit(event, nakPacket);
         break;
 

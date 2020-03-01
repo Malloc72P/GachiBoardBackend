@@ -4,6 +4,7 @@ import { TouchHistory } from './TouchHistory/TouchHistory';
 export class WbItemPacketDto {
   public _id;
   public createdBy;
+  public occupiedBy;
   public lastModifier;
   public version:number;
   public touchHistory:Array<TouchHistory>;
@@ -13,6 +14,7 @@ export class WbItemPacketDto {
 
   constructor(createdBy?, wbItemDto?: WhiteboardItemDto) {
     this.createdBy = createdBy;
+    this.occupiedBy = null;
     this.lastModifier = createdBy;
     this.version = 0;
     this.touchHistory = new Array<TouchHistory>();
