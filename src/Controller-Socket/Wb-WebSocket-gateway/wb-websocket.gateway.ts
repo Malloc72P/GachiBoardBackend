@@ -73,6 +73,9 @@ export class WbWebsocketGateway{
         packetDto.dataDto = wbItemArray;
         packetDto.additionalData = createdWbItemPacket;
         WbWebsocketGateway.responseAckPacket( socket, HttpHelper.websocketApi.whiteboardItem.create_multiple, packetDto);
+      })
+      .catch((rejection)=>{
+        this.wsWbItemErrHandler(rejection, socket, packetDto, HttpHelper.websocketApi.whiteboardItem.update.event);
       });
   }
   @SubscribeMessage(HttpHelper.websocketApi.whiteboardItem.update.event)
@@ -163,6 +166,7 @@ export class WbWebsocketGateway{
   }
 
   wsWbItemErrHandler(rejection:RejectionEvent, socket:Socket, packetDto:WebsocketPacketDto, event){
+    console.log("WbWebsocketGateway >> wsWbItemErrHandler >> rejection : ",rejection);
     console.warn("WbWebsocketGateway >> wsWbItemErrHandler >> reason : ",RejectionEventEnum[rejection.action]);
     console.log("WbWebsocketGateway >> wsWbItemErrHandler >> rejection : ",rejection.data);
     if(rejection.action === RejectionEventEnum.DEBUGING){

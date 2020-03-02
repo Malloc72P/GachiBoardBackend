@@ -104,6 +104,9 @@ export class WhiteboardItemDaoService {
               });
 
 
+          }).catch((e)=>{
+            console.log("WhiteboardItemDaoService >> saveMultipleWbItem >> e : ",e);
+            reject(new RejectionEvent(RejectionEventEnum.UPDATE_FAILED, e))
           });
 
         });
@@ -137,8 +140,15 @@ export class WhiteboardItemDaoService {
       let wbItemDto = wbItemPacket.wbItemDto;
       if(wbItemDto.type === WhiteboardItemType.EDITABLE_LINK){
         let edtLink:EditableLinkDto = wbItemDto as EditableLinkDto;
-        edtLink.fromLinkPort.ownerWbItemId = idMap.get(edtLink.fromLinkPort.ownerWbItemId);
-        edtLink.toLinkPort.ownerWbItemId = idMap.get(edtLink.toLinkPort.ownerWbItemId);
+        if(!edtLink.fromLinkPort || !edtLink.toLinkPort){
+          console.log("WhiteboardItemDaoService >> saveMultipleDocument >> trap");
+        }
+        if(edtLink.fromLinkPort){
+          edtLink.fromLinkPort.ownerWbItemId = idMap.get(edtLink.fromLinkPort.ownerWbItemId);
+        }
+        if (edtLink.toLinkPort) {
+          edtLink.toLinkPort.ownerWbItemId = idMap.get(edtLink.toLinkPort.ownerWbItemId);
+        }
       }
 
     }
