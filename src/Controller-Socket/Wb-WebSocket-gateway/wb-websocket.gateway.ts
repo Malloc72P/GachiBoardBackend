@@ -9,6 +9,7 @@ import { WhiteboardItemDto } from '../../Model/DTO/WhiteboardItemDto/whiteboard-
 import { WhiteboardItemType } from '../../Model/Helper/data-type-enum/data-type.enum';
 import { EditableLinkDto } from '../../Model/DTO/WhiteboardItemDto/WhiteboardShapeDto/LinkPortDto/EditableLinkDto/editable-link-dto';
 import { WhiteboardItemDaoService } from '../../Model/DAO/whiteboard-item-dao/whiteboard-item-dao.service';
+import { SimpleRasterDto } from '../../Model/DTO/WhiteboardItemDto/WhiteboardShapeDto/EditableRasterDto/SimpleRasterDto/simple-raster-dto';
 
 @WebSocketGateway()
 export class WbWebsocketGateway{
@@ -61,6 +62,7 @@ export class WbWebsocketGateway{
   @SubscribeMessage(HttpHelper.websocketApi.whiteboardItem.create_multiple.event)
   onWbItemMultipleCreateRequest(socket: Socket, packetDto:WebsocketPacketDto) {
     console.log("WbWebsocketGateway >> onWbItemMultipleCreateRequest >> 진입함");
+    console.log("WbWebsocketGateway >> onWbItemMultipleCreateRequest >> packetDto : ",packetDto);
     this.whiteboardItemDao.saveMultipleWbItem(packetDto)
       .then((resolveParam)=>{
         let userDto = resolveParam.userDto;
@@ -122,7 +124,15 @@ export class WbWebsocketGateway{
         let userDto = resolveParam.userDto;
         let projectDto = resolveParam.projectDto;
         let updatedWbItemPacket = resolveParam.updatedWbItemPacket;
+
+        if(updatedWbItemPacket.wbItemDto.type === WhiteboardItemType.SIMPLE_RASTER){
+          let foundSimpleRasterDto:SimpleRasterDto = updatedWbItemPacket.wbItemDto as SimpleRasterDto;
+          foundSimpleRasterDto.imageBlob = null;
+        }
+
         packetDto.dataDto = updatedWbItemPacket.wbItemDto;
+
+
         WbWebsocketGateway.responseAckPacket( socket, HttpHelper.websocketApi.whiteboardItem.occupied, packetDto, updatedWbItemPacket);
       })
       .catch((rejection)=>{
@@ -138,6 +148,12 @@ export class WbWebsocketGateway{
         let userDto = resolveParam.userDto;
         let projectDto = resolveParam.projectDto;
         let updatedWbItemPacket = resolveParam.updatedWbItemPacket;
+
+        if(updatedWbItemPacket.wbItemDto.type === WhiteboardItemType.SIMPLE_RASTER){
+          let foundSimpleRasterDto:SimpleRasterDto = updatedWbItemPacket.wbItemDto as SimpleRasterDto;
+          foundSimpleRasterDto.imageBlob = null;
+        }
+
         packetDto.dataDto = updatedWbItemPacket.wbItemDto;
 
         WbWebsocketGateway.responseAckPacket( socket, HttpHelper.websocketApi.whiteboardItem.notOccupied, packetDto, updatedWbItemPacket);

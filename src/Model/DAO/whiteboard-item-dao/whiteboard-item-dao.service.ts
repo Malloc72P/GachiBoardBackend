@@ -14,6 +14,7 @@ import { WhiteboardSessionDaoService } from '../whiteboard-session-dao/whiteboar
 import { TouchHistory } from '../../DTO/WebsocketPacketDto/WbItemPacketDto/TouchHistory/TouchHistory';
 import { WhiteboardItemType } from '../../Helper/data-type-enum/data-type.enum';
 import { EditableLinkDto } from '../../DTO/WhiteboardItemDto/WhiteboardShapeDto/LinkPortDto/EditableLinkDto/editable-link-dto';
+import { SimpleRasterDto } from '../../DTO/WhiteboardItemDto/WhiteboardShapeDto/EditableRasterDto/SimpleRasterDto/simple-raster-dto';
 
 @Injectable()
 export class WhiteboardItemDaoService {
@@ -170,6 +171,13 @@ export class WhiteboardItemDaoService {
               foundWbItemPacket.version++;
               foundWbItemPacket.lastModifier = userDto.idToken;
               foundWbItemPacket.modifiedDate = new Date();
+
+              if(wbItemDto.type === WhiteboardItemType.SIMPLE_RASTER){
+                let simpleRasterDto:SimpleRasterDto = wbItemDto as SimpleRasterDto;
+                let foundSimpleRasterDto:SimpleRasterDto = foundWbItemPacket.wbItemDto as SimpleRasterDto;
+                simpleRasterDto.imageBlob = foundSimpleRasterDto.imageBlob;
+              }
+
               foundWbItemPacket.wbItemDto = wbItemDto;
 
               // let newTouchHistory = new TouchHistory(userDto.idToken, foundWbItemPacket.version, foundWbItemPacket.wbItemDto);
@@ -178,6 +186,10 @@ export class WhiteboardItemDaoService {
 
               this.update(foundWbItemPacket._id, foundWbItemPacket)
                 .then(()=>{
+                  if(foundWbItemPacket.wbItemDto.type === WhiteboardItemType.SIMPLE_RASTER){
+                    let foundSimpleRasterDto:SimpleRasterDto = foundWbItemPacket.wbItemDto as SimpleRasterDto;
+                    foundSimpleRasterDto.imageBlob = null;
+                  }
                   let resolveParam = {
                     userDto : userDto,
                     wbSessionDto : wbSessionDto,
