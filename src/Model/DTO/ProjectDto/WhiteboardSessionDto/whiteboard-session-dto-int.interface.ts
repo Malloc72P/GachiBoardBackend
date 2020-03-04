@@ -8,4 +8,7 @@ export interface WhiteboardSessionDtoIntf extends Document{
   startDate;
   wbItemArray:Array<any>;
   connectedUsers:Array<any>;
+
+  zIndexMinimum;
+  zIndexMaximum;
 }

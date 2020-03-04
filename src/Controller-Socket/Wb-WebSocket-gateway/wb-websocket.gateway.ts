@@ -80,6 +80,20 @@ export class WbWebsocketGateway{
         this.wsWbItemErrHandler(rejection, socket, packetDto, HttpHelper.websocketApi.whiteboardItem.update.event);
       });
   }
+  @SubscribeMessage(HttpHelper.websocketApi.whiteboardItem.updateZIndex.event)
+  onWbItemUpdateZIndexRequest(socket: Socket, packetDto:WebsocketPacketDto) {
+    console.log("WbWebsocketGateway >> onWbItemUpdateZIndexRequest >> 진입함");
+    this.whiteboardItemDao.updateWbItemsZIndex(packetDto)
+      .then((resolveParam)=>{
+        let userDto = resolveParam.userDto;
+        let projectDto = resolveParam.projectDto;
+        let updatedWbItemList = resolveParam.updatedWbItemList;
+        WbWebsocketGateway.responseAckPacket( socket, HttpHelper.websocketApi.whiteboardItem.updateZIndex, packetDto, updatedWbItemList);
+      })
+      .catch((rejection)=>{
+        this.wsWbItemErrHandler(rejection, socket, packetDto, HttpHelper.websocketApi.whiteboardItem.updateZIndex.event);
+      });
+  }
   @SubscribeMessage(HttpHelper.websocketApi.whiteboardItem.update.event)
   onWbItemUpdateRequest(socket: Socket, packetDto:WebsocketPacketDto) {
     console.log("WbWebsocketGateway >> onWbItemUpdateRequest >> 진입함");
@@ -175,6 +189,7 @@ export class WbWebsocketGateway{
 
     if(additionalData){
       ackPacket.additionalData = additionalData;
+      packetDto.additionalData = additionalData;
     }
 
     socket.emit(webSocketRequest.event, ackPacket);
@@ -189,27 +204,23 @@ export class WbWebsocketGateway{
       return;
     }
     let nakPacket:WebsocketPacketDto;
+    nakPacket = WebsocketPacketDto.createNakPacket(packetDto.wsPacketSeq, packetDto.namespaceValue);
+
     switch (rejection.action) {
       case RejectionEventEnum.ALREADY_LOCKED:
-        nakPacket = WebsocketPacketDto.createNakPacket(packetDto.wsPacketSeq, packetDto.namespaceValue);
         nakPacket.additionalData = RejectionEventEnum.ALREADY_LOCKED;
-        socket.emit(event, nakPacket);
         break;
       case RejectionEventEnum.LOCKED_BY_ANOTHER_USER:
-        nakPacket = WebsocketPacketDto.createNakPacket(packetDto.wsPacketSeq, packetDto.namespaceValue);
         nakPacket.additionalData = RejectionEventEnum.LOCKED_BY_ANOTHER_USER;
-        socket.emit(event, nakPacket);
         break;
       case RejectionEventEnum.OCCUPIED_BY_ANOTHER_USER:
-        console.log("WbWebsocketGateway >> wsWbItemErrHandler >> OCCUPIED_BY_ANOTHER_USER >> 진입함");
-        nakPacket = WebsocketPacketDto.createNakPacket(packetDto.wsPacketSeq, packetDto.namespaceValue);
         nakPacket.dataDto = packetDto.dataDto;
         nakPacket.additionalData = rejection.data;
         nakPacket.specialAction = RejectionEventEnum.LOCKED_BY_ANOTHER_USER;
-        socket.emit(event, nakPacket);
         break;
-
     }
+
+    socket.emit(event, nakPacket);
   }
 
 

@@ -1,11 +1,7 @@
 import { Model } from 'mongoose';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { KanbanItemDtoIntf } from '../../DTO/KanbanItemDto/kanban-item-intf.interface';
-import { ProjectDaoService } from '../project-dao/project-dao.service';
-import { KanbanDataDaoService } from '../kanban-data-dao/kanban-data-dao.service';
 import { WbItemPacketDtoIntf } from '../../DTO/WebsocketPacketDto/WbItemPacketDto/WbItemPacket-dto-int.interface';
-import { KanbanItemDto } from '../../DTO/KanbanItemDto/kanban-item-dto';
 import { WbItemPacketDto } from '../../DTO/WebsocketPacketDto/WbItemPacketDto/WbItemPacketDto';
 import { WebsocketPacketDto } from '../../DTO/WebsocketPacketDto/WebsocketPacketDto';
 import { RejectionEvent, RejectionEventEnum } from '../../Helper/PromiseHelper/RejectionEvent';
@@ -15,6 +11,7 @@ import { TouchHistory } from '../../DTO/WebsocketPacketDto/WbItemPacketDto/Touch
 import { WhiteboardItemType } from '../../Helper/data-type-enum/data-type.enum';
 import { EditableLinkDto } from '../../DTO/WhiteboardItemDto/WhiteboardShapeDto/LinkPortDto/EditableLinkDto/editable-link-dto';
 import { SimpleRasterDto } from '../../DTO/WhiteboardItemDto/WhiteboardShapeDto/EditableRasterDto/SimpleRasterDto/simple-raster-dto';
+import { Z_INDEX_ACTION } from '../../Helper/HttpHelper/HttpHelper';
 
 @Injectable()
 export class WhiteboardItemDaoService {
@@ -61,6 +58,7 @@ export class WhiteboardItemDaoService {
           this.create(wbItemPacket)
             .then((createdWbItemPacket:WbItemPacketDto)=>{
               createdWbItemPacket.wbItemDto.id = createdWbItemPacket._id;
+              createdWbItemPacket.wbItemDto.zIndex = wbSessionDto.zIndexMaximum++;
               // let newTouchHistory = new TouchHistory(userDto.idToken, createdWbItemPacket.version, createdWbItemPacket.wbItemDto);
               let newTouchHistory = new TouchHistory(userDto.idToken, createdWbItemPacket.version, null);
               createdWbItemPacket.touchHistory.push(newTouchHistory);
@@ -90,7 +88,7 @@ export class WhiteboardItemDaoService {
           let userDto = data.userDto;
           let wbSessionDto = data.wbSessionDto;
 
-          this.saveMultipleDocument(userDto, wbItemArray).then((createdItemArray:Array<WbItemPacketDto>)=>{
+          this.saveMultipleDocument(userDto, wbItemArray, wbSessionDto).then((createdItemArray:Array<WbItemPacketDto>)=>{
             for(let createdItem of createdItemArray){
               wbSessionDto.wbItemArray.push(createdItem._id);
             }
@@ -113,7 +111,7 @@ export class WhiteboardItemDaoService {
         });
     });
   }
-  private async saveMultipleDocument(userDto, wbItemArray){
+  private async saveMultipleDocument(userDto, wbItemArray, wbSessionDto){
     let idMap:Map<any, any> = new Map<any, any>();
     let createdItemArray:Array<WbItemPacketDto> = new Array<WbItemPacketDto>();
 
@@ -129,7 +127,9 @@ export class WhiteboardItemDaoService {
       idMap.set( wbItemPacket.wbItemDto.id ,createdItem._id );
 
       //wbItemDto 아이디 수정 및 터치 히스토리 추가
+      //추가로 Z-Index부여까지 수행
       createdItem.wbItemDto.id = createdItem._id;
+      createdItem.wbItemDto.zIndex = wbSessionDto.zIndexMaximum++;
       let newTouchHistory = new TouchHistory(userDto.idToken, createdItem.version, createdItem.wbItemDto);
       createdItem.touchHistory.push(newTouchHistory);
 
@@ -211,6 +211,78 @@ export class WhiteboardItemDaoService {
         });
     });
   }
+  async updateWbItemsZIndex(packetDto:WebsocketPacketDto): Promise<any>{
+    return new Promise<any>((resolve, reject)=>{
+      let wbItemDtoList:Array<WhiteboardItemDto> = packetDto.dataDto as Array<WhiteboardItemDto>;
+      let zIndexAction:Z_INDEX_ACTION = packetDto.additionalData as Z_INDEX_ACTION;
+      this.wbSessionDao.verifyRequest(packetDto.senderIdToken, packetDto.namespaceValue, packetDto.accessToken)
+        .then((data)=>{
+          let userDto = data.userDto;
+          let wbSessionDto = data.wbSessionDto;
+
+          this.getWbItemPacketList(wbItemDtoList).then((realWbItemList:Array<WbItemPacketDto>)=>{
+            let foundWbItemDtoList:Array<WhiteboardItemDto> = new Array<WhiteboardItemDto>();
+            for(let foundWbItemPacket of realWbItemList){
+              foundWbItemDtoList.push(foundWbItemPacket.wbItemDto);
+            }
+            //Z-Index 수정작업 시작
+            if(zIndexAction === Z_INDEX_ACTION.BRING_TO_FRONT){
+              foundWbItemDtoList.sort((prevWbItem, currWbItem)=>{
+                if(prevWbItem.zIndex < currWbItem.zIndex){
+                  return -1;
+                }else return 1;
+              });
+              for(let currWbItemDto of foundWbItemDtoList){
+                currWbItemDto.zIndex = wbSessionDto.zIndexMaximum++;
+              }
+            }else{
+              foundWbItemDtoList.sort((prevWbItem, currWbItem)=>{
+                if(prevWbItem.zIndex > currWbItem.zIndex){
+                  return -1;
+                }else return 1;
+              });
+              for(let currWbItemDto of foundWbItemDtoList){
+                currWbItemDto.zIndex = wbSessionDto.zIndexMinimum--;
+              }
+            }
+            //Z-Index 수정작업 종료
+            this.wbSessionDao.update(wbSessionDto._id, wbSessionDto).then(()=>{
+              this.updateWbItemPacketList(realWbItemList).then(()=>{
+                let resolveParam = {
+                  userDto : userDto,
+                  wbSessionDto : wbSessionDto,
+                  updatedWbItemList : realWbItemList
+                };
+                resolve(resolveParam);
+              });
+            });
+          });
+
+        })
+        .catch((e)=>{
+          reject(new RejectionEvent(RejectionEventEnum.UPDATE_FAILED, e))
+        });
+    });
+  }
+
+  async getWbItemPacketList(wbItemDtoList:Array<WhiteboardItemDto>){
+    let returnArray:Array<WbItemPacketDto> = new Array<WbItemPacketDto>();
+    for(let wbItemDto of wbItemDtoList){
+      let foundPacket = await this.wbItemPacketModel.findOne({ _id: wbItemDto.id }).exec();
+      returnArray.push(foundPacket);
+    }
+    return returnArray;
+  }
+  async updateWbItemPacketList(wbItemPacketDtos:Array<WbItemPacketDto>){
+    try {
+      for (let wbItempacket of wbItemPacketDtos) {
+        await this.wbItemPacketModel.updateOne({_id : wbItempacket._id}, wbItempacket).exec();
+      }
+    } catch (e) {
+      console.log("WhiteboardItemDaoService >> updateWbItemPacketList >> e : ",e);
+    }
+  }
+
   async occupyItem(packetDto:WebsocketPacketDto): Promise<any>{
     return new Promise<any>((resolve, reject)=>{
       let wbItemDto:WhiteboardItemDto = packetDto.dataDto as WhiteboardItemDto;
