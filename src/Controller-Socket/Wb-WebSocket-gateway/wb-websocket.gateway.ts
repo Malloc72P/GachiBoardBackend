@@ -49,6 +49,7 @@ export class WbWebsocketGateway{
   @SubscribeMessage(HttpHelper.websocketApi.whiteboardItem.create.event)
   onWbItemCreateRequest(socket: Socket, packetDto:WebsocketPacketDto) {
     console.log("WbWebsocketGateway >> onWbItemCreateRequest >> 진입함");
+    console.log("WbWebsocketGateway >> onWbItemCreateRequest >> packetDto : ",packetDto);
     this.whiteboardItemDao.saveWbItem(packetDto)
       .then((resolveParam)=>{
         let userDto = resolveParam.userDto;

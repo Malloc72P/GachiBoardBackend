@@ -7,13 +7,13 @@ export class WhiteboardItemDto {
   public center:GachiPointDto;
 
   public isGrouped;
-  public parentEdtGroupId;
+  public groupItemList;
 
-  constructor(id, type, center: GachiPointDto, isGrouped, parentEdtGroupId) {
+  constructor(id, type, center: GachiPointDto, isGrouped, groupItemList) {
     this.id = id;
     this.type = type;
     this.center = center;
     this.isGrouped = isGrouped;
-    this.parentEdtGroupId = parentEdtGroupId;
+    this.groupItemList = groupItemList;
   }
 }
