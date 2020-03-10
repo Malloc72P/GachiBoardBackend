@@ -1,6 +1,6 @@
 import { OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { HttpHelper, WebSocketRequest, WebsocketValidationCheck } from '../../Model/Helper/HttpHelper/HttpHelper';
+import { HttpHelper, WebSocketRequest } from '../../Model/Helper/HttpHelper/HttpHelper';
 import { UserDaoService } from '../../Model/DAO/user-dao/user-dao.service';
 import { ProjectDaoService } from '../../Model/DAO/project-dao/project-dao.service';
 import { RejectionEvent, RejectionEventEnum } from '../../Model/Helper/PromiseHelper/RejectionEvent';
@@ -10,6 +10,7 @@ import { WhiteboardSessionDaoService } from '../../Model/DAO/whiteboard-session-
 import { WhiteboardSessionManagerService } from '../../Model/SessionManager/Session-Manager-Whiteboard/whiteboard-session-manager.service';
 import { WebsocketConnection } from '../../Model/SessionManager/Websocket-Connection/Websocket-Connection';
 import { GachiPointDto } from '../../Model/DTO/GachiPoint/Gachi-Point';
+import { WebsocketPacketActionEnum } from '../../Model/DTO/WebsocketPacketDto/WebsocketPacketActionEnum';
 
 @WebSocketGateway()
 export class WbSessionWebsocketGateway implements OnGatewayDisconnect{
@@ -28,9 +29,11 @@ export class WbSessionWebsocketGateway implements OnGatewayDisconnect{
     console.log("ProjectWebsocketGateway >> handleDisconnect >> 진입함");
     console.log("ProjectWebsocketGateway >> handleDisconnect >> client : ",client.id);
     let removedConnection:WebsocketConnection = this.whiteboardSessionManagerService.removeConnection(client.id);
+    let disconnectedUserIdToken = null;
     if (removedConnection) {
       this.whiteboardSessionDao.findOne(removedConnection.namespaceString)
         .then((foundWbSession: WhiteboardSessionDto) => {
+          disconnectedUserIdToken = removedConnection.participantIdToken;
           let delIdx = -1;
           for (let i = 0; i < foundWbSession.connectedUsers.length; i++) {
             let currUserIdToken = foundWbSession.connectedUsers[i];
@@ -44,6 +47,17 @@ export class WbSessionWebsocketGateway implements OnGatewayDisconnect{
             this.whiteboardSessionDao.update(foundWbSession._id, foundWbSession)
               .then(() => {
                 console.log("WbSessionWebsocketGateway >> handleDisconnect >> USER DISCONNECT COMPLETE");
+
+                if (disconnectedUserIdToken) {
+                  let normalPacket = WebsocketPacketDto.createNormalPacket(foundWbSession._id.toString(), WebsocketPacketActionEnum.DISCONNECT);
+                  normalPacket.dataDto = disconnectedUserIdToken;
+                  normalPacket.additionalData = this.whiteboardSessionManagerService.wbSessionMap.get(foundWbSession._id.toString()).cursorDataArray;
+
+                  this.server.to(foundWbSession._id.toString()).emit(
+                    HttpHelper.websocketApi.whiteboardSession.disconnect.event,
+                    normalPacket
+                  )
+                }
               })
           }
         })
@@ -113,6 +127,7 @@ export class WbSessionWebsocketGateway implements OnGatewayDisconnect{
         this.whiteboardSessionDao.update(foundWbSessionDto._id, foundWbSessionDto).then(()=>{
           packetDto.dataDto = foundWbSessionDto;
           packetDto.additionalData = userDto.idToken;
+          packetDto.namespaceValue = foundWbSessionDto._id;
           console.log("WbSessionWebsocketGateway >> onWbSessionJoinRequest >> packetDto : ",packetDto);
           WbSessionWebsocketGateway.responseAckPacket( socket, HttpHelper.websocketApi.whiteboardSession.join, packetDto);
         });

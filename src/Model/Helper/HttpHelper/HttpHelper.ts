@@ -34,6 +34,7 @@ export enum WebSocketTypeEnum {
   LOCK,
   UNLOCK,
   JOIN,
+  DISCONNECT,
   OCCUPIED,
   NOT_OCCUPIED,
   UPDATE_ZINDEX
@@ -140,6 +141,9 @@ export class HttpHelper {
       join : new WebSocketRequest(
         "wbSession_join",WebSocketTypeEnum.JOIN
       ),
+      disconnect : new WebSocketRequest(
+        "wbSession_disconnect",WebSocketTypeEnum.DISCONNECT
+      ),
       create_cursor : new WebSocketRequest(
         "wbSession_create_cursor", WebSocketTypeEnum.CREATE
       ),
@@ -163,8 +167,14 @@ export class HttpHelper {
       update : new WebSocketRequest(
         "wbItem_update", WebSocketTypeEnum.UPDATE
       ),
+      update_multiple : new WebSocketRequest(
+        "wbItem_update_multiple", WebSocketTypeEnum.UPDATE
+      ),
       delete : new WebSocketRequest(
         "wbItem_delete", WebSocketTypeEnum.DELETE
+      ),
+      delete_multiple : new WebSocketRequest(
+        "wbItem_delete_multiple", WebSocketTypeEnum.DELETE
       ),
       lock : new WebSocketRequest(
         "wbItem_lock", WebSocketTypeEnum.LOCK
