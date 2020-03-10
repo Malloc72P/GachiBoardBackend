@@ -85,7 +85,16 @@ export class InviteCodeController {
           }
           let newParticipant = ParticipantDto.createPriticipantDto(userDto);
           newParticipant.authorityLevel = AuthorityLevel.NORMAL;
-          projectDto.participantList.push(newParticipant);
+          let isAvail = true;
+          for(let participantDto of projectDto.participantList){
+            if(participantDto.idToken === newParticipant.idToken){
+              isAvail = false;
+              break;
+            }
+          }
+          if (isAvail) {
+            projectDto.participantList.push(newParticipant);
+          }
 
           realInviteCode.remainCount--;
           if(realInviteCode.remainCount <= 0){
@@ -97,7 +106,9 @@ export class InviteCodeController {
             .then(()=>{
               userDto.participatingProjects.push(projectDto._id);
               this.userDao.update(userDto._id, userDto).then(()=>{
-                res.status(HttpStatus.CREATED).send({result : "success"});
+                this.userDao.findOne(userDto.idToken).then((resultUserDto:UserDto)=>{
+                  res.status(HttpStatus.CREATED).send({result : resultUserDto});
+                });
               });
           });
       });
