@@ -47,6 +47,10 @@ export enum SpecialAction {
   PASTE_COMPLETE,
   RELOCATE_PASTE_COMPLETE
 }
+export enum REST_RESPONSE{
+  ACK = 100,
+  NOT_AUTHORIZED = 400,
+}
 
 
 export enum WebsocketValidationCheck {
@@ -68,6 +72,12 @@ export class HttpHelper {
     authGoogle : new ApiRequest(
       "/auth/google",   ApiRequestTypeEnum.REDIRECT
     ),
+    authKakao : new ApiRequest(
+      "/auth/kakao",   ApiRequestTypeEnum.REDIRECT
+    ),
+    authNaver : new ApiRequest(
+      "/auth/naver",   ApiRequestTypeEnum.REDIRECT
+    ),
     protected : new ApiRequest(
       "/auth/protected",     ApiRequestTypeEnum.POST
     ),
@@ -80,6 +90,21 @@ export class HttpHelper {
       ),
       getList : new ApiRequest(
         "/project", ApiRequestTypeEnum.GET
+      ),
+      generateInviteCode : new ApiRequest(
+        "/inviteCode", ApiRequestTypeEnum.POST
+      ),
+      submitInviteCode : new ApiRequest(
+        "/inviteCode", ApiRequestTypeEnum.GET
+      ),
+      invitation : new ApiRequest(
+        "/invitation", ApiRequestTypeEnum.REDIRECT
+      ),
+      exit : new ApiRequest(
+        "/project", ApiRequestTypeEnum.DELETE
+      ),
+      patch : new ApiRequest(
+        "/project", ApiRequestTypeEnum.PATCH
       )
     }
   };
