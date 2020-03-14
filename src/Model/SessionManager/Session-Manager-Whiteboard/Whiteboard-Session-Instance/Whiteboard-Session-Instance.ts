@@ -9,15 +9,17 @@ import { HttpHelper } from '../../../Helper/HttpHelper/HttpHelper';
 
 export class WhiteboardSessionInstance {
   public cursorDataArray:Array<CursorData>;
-  private wbSessionNsp:string;
+  public wbSessionNsp:string;
+  public projectNsp:string;
   private wsServer:Server;
   public cursorDataVersion = 0;
   private prevCursorDataVersion = 0;
 
-  constructor(wsServer:Server, wbSessionNsp) {
+  constructor(wsServer:Server, wbSessionNsp, projectNsp) {
     this.cursorDataArray = new Array<CursorData>();
     this.wsServer = wsServer;
     this.wbSessionNsp = wbSessionNsp;
+    this.projectNsp = projectNsp;
     this.broadCastCursorData();
   }
 

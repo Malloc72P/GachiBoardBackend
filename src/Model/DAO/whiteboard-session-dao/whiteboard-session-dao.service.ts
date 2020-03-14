@@ -141,5 +141,27 @@ export class WhiteboardSessionDaoService {
     });
   }
 
+  async updateWbSession(packetDto:WebsocketPacketDto): Promise<any>{
+    let wbSessionDto:WhiteboardSessionDto = packetDto.dataDto as WhiteboardSessionDto;
+    return new Promise<any>((resolve, reject)=>{
+      this.projectDao.verifyRequest(packetDto.senderIdToken, packetDto.namespaceValue, packetDto.accessToken)
+        .then((data)=>{
+          let userDto = data.userDto;
+          let projectDto = data.projectDto;
+
+          let wbSessionId = wbSessionDto._id;
+          console.log("WhiteboardSessionDaoService >> getWbSessionWithProtection >> wbSessionId : ",wbSessionId);
+
+          this.findOne(wbSessionId).then((foundWbSessionDto:WhiteboardSessionDto)=>{
+            foundWbSessionDto.title = wbSessionDto.title;
+            this.update(foundWbSessionDto._id, foundWbSessionDto).then(()=>{
+              let resolveParam = this.createResolveParameter(userDto, projectDto, foundWbSessionDto);
+              resolve(resolveParam);
+            });
+          });
+        });
+    });
+  }
+
 
 }

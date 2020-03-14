@@ -50,6 +50,7 @@ export enum SpecialAction {
 export enum REST_RESPONSE{
   ACK = 100,
   NOT_AUTHORIZED = 400,
+  INVALID_PARTICIPANT = 401
 }
 
 
@@ -57,6 +58,7 @@ export enum WebsocketValidationCheck {
   INVALID_USER,
   INVALID_PROJECT,
   INVALID_PARTICIPANT,
+  KICKED_PARTICIPANT
 }
 
 export class HttpHelper {
@@ -113,6 +115,9 @@ export class HttpHelper {
     project : {
       joinProject : new WebSocketRequest(
         "project_join",WebSocketTypeEnum.READ
+      ),
+      update : new WebSocketRequest(
+        "project_update",WebSocketTypeEnum.UPDATE
       )
     },
     kanban : {

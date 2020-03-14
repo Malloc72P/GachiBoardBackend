@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpStatus, Patch, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpStatus, Patch, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ProjectDto } from '../../Model/DTO/ProjectDto/project-dto';
 import { ParticipantDto, ParticipantState } from '../../Model/DTO/ProjectDto/ParticipantDto/participant-dto';
@@ -8,8 +8,10 @@ import { UserDto } from '../../Model/DTO/UserDto/user-dto';
 import { KanbanDataDaoService } from '../../Model/DAO/kanban-data-dao/kanban-data-dao.service';
 import { KanbanDataDto } from '../../Model/DTO/KanbanDataDto/kanban-data-dto';
 import { AuthorityLevel } from '../../Model/DTO/ProjectDto/ParticipantDto/authority-level.enum';
-import { REST_RESPONSE } from '../../Model/Helper/HttpHelper/HttpHelper';
+import { HttpHelper, REST_RESPONSE } from '../../Model/Helper/HttpHelper/HttpHelper';
 import { RestPacketDto } from '../../Model/DTO/RestPacketDto/RestPacketDto';
+import { ProjectSessionManagerService } from '../../Model/SessionManager/Session-Manager-Project/project-session-manager.service';
+import { WebsocketPacketActionEnum } from '../../Model/DTO/WebsocketPacketDto/WebsocketPacketActionEnum';
 
 @Controller('project')
 export class ProjectController {
@@ -17,7 +19,8 @@ export class ProjectController {
   constructor(
     private userDao: UserDaoService,
     private projectDaoService: ProjectDaoService,
-    private kanbanDataDao:KanbanDataDaoService
+    private kanbanDataDao:KanbanDataDaoService,
+    private projectSessionManagerService:ProjectSessionManagerService
   ){
 
   }
@@ -84,6 +87,16 @@ export class ProjectController {
             participatingProjects.splice( delIdx, 1 );
           }
         }
+
+        let numberOfAvailManager = this.getNumberOfAvailProjectManager(foundProjectDto.participantList);
+        if(numberOfAvailManager <= 0){
+          for(let participantDto of foundProjectDto.participantList){
+            if(participantDto.state === ParticipantState.AVAIL){
+              participantDto.authorityLevel = AuthorityLevel.PROJECT_MANAGER;
+            }
+          }
+        }
+
         this.projectDaoService.update(foundProjectDto._id.toString(), foundProjectDto).then(()=>{
           this.userDao.update(userDto._id, userDto).then(()=>{
             res.status(HttpStatus.CREATED).send(userDto);
@@ -129,6 +142,12 @@ export class ProjectController {
           // res.status(HttpStatus.CREATED).send({msg : "testing"});
           this.userDao.findOne(req.user).then((updatedUserDto:UserDto)=>{
             this.onSuccess(res, updatedUserDto);
+            this.projectSessionManagerService.broadcastToProjectMember(
+              projectId,
+              WebsocketPacketActionEnum.UPDATE,
+              HttpHelper.websocketApi.project.update,
+              foundProjectDto
+              )
           });
 
 
@@ -137,12 +156,19 @@ export class ProjectController {
     }).catch((e)=>{console.warn("ProjectController >> userDao.findOne >> e : ",e);});
   }
 
-  @Get()
+  @Get("participantList")
   @UseGuards(AuthGuard('jwt'))
-  onGetProjects(@Req() req, @Res() res)
+  onGetProjects(@Req() req, @Res() res, @Query() param)
   {
-    console.log("ProjectController >> onGetProjects >> 진입함");
-    console.log("ProjectController >> onGetProjects >> req : ",req.user);
+    let projectId = param.projectId;
+
+    this.userDao.findOne(req.user).then((userDto:UserDto)=>{
+      this.projectDaoService.findOne(projectId).then((foundProjectDto:ProjectDto)=>{
+
+        this.onSuccess(res, foundProjectDto.participantList);
+
+      }).catch((e)=>{console.warn("ProjectController >> userDao.findOne >> e : ",e);});
+    })
 
   }
 
@@ -153,6 +179,16 @@ export class ProjectController {
   onFailed(res, errorCode:REST_RESPONSE, msg?, additionalData?){
     let newPacket:RestPacketDto = new RestPacketDto(errorCode, msg, additionalData);
     res.status(HttpStatus.CREATED).send(newPacket);
+  }
+
+  getNumberOfAvailProjectManager(participantList:Array<ParticipantDto>){
+    let count = 0;
+    for(let participantDto of participantList){
+      if( (participantDto.authorityLevel === AuthorityLevel.PROJECT_MANAGER) && (participantDto.state === ParticipantState.AVAIL) ){
+        count++;
+      }
+    }
+    return count;
   }
 
 }

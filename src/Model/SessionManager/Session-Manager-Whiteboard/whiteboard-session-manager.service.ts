@@ -4,6 +4,7 @@ import { WebsocketConnection } from '../Websocket-Connection/Websocket-Connectio
 import { GachiPointDto } from '../../DTO/GachiPoint/Gachi-Point';
 import { WhiteboardSessionInstance } from './Whiteboard-Session-Instance/Whiteboard-Session-Instance';
 import { CursorData } from './Whiteboard-Session-Instance/Cursor-Data/Cursor-Data';
+import { ProjectDto } from '../../DTO/ProjectDto/project-dto';
 
 @Injectable()
 export class WhiteboardSessionManagerService {
@@ -78,11 +79,11 @@ export class WhiteboardSessionManagerService {
   /* *************************************************** */
   /* Cursor Data Handler START */
   /* *************************************************** */
-  addCursorData(wsServerInstance:Server, wsConnection:WebsocketConnection, newPosition:GachiPointDto){
+  addCursorData(wsServerInstance:Server, wsConnection:WebsocketConnection, newPosition:GachiPointDto, projectDto:ProjectDto){
     if(!this.wbSessionMap.has(wsConnection.namespaceString)){
       this.wbSessionMap.set(wsConnection.namespaceString,
         new WhiteboardSessionInstance(
-          wsServerInstance, wsConnection.namespaceString
+          wsServerInstance, wsConnection.namespaceString, projectDto._id.toString()
         ));
     }
     let wbSession:WhiteboardSessionInstance = this.wbSessionMap.get(wsConnection.namespaceString);
