@@ -202,7 +202,7 @@ export class WbWebsocketGateway{
     ackPacket.accessToken = null;
     packetDto.accessToken = null;
     console.log(`WbWebsocketGateway >> responseAckPacket >> ${webSocketRequest.event} >> ackPacket : `,ackPacket);
-    socket.emit(webSocketRequest.event, ackPacket);
+    socket.emit(webSocketRequest.event + HttpHelper.ACK_SIGN, ackPacket);
     socket.broadcast.to(packetDto.namespaceValue.toString()).emit(webSocketRequest.event, packetDto);
   }
 

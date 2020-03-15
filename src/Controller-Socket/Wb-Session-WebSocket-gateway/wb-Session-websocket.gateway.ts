@@ -55,6 +55,7 @@ export class WbSessionWebsocketGateway implements OnGatewayDisconnect{
                   let wbSessionInstance = this.whiteboardSessionManagerService.wbSessionMap.get(foundWbSession._id.toString());
 
                   if (wbSessionInstance) {
+                    this.whiteboardSessionManagerService.removeCursorData(removedConnection);
                     console.log("WbSessionWebsocketGateway >> handleDisconnect >> wbSessionInstance : ",wbSessionInstance);
                     this.server.to(wbSessionInstance.projectNsp).emit(
                       HttpHelper.websocketApi.whiteboardSession.disconnect.event,
@@ -108,8 +109,6 @@ export class WbSessionWebsocketGateway implements OnGatewayDisconnect{
       }).catch((e:RejectionEvent)=>{
       this.wsErrHandler(e, socket, packetDto, HttpHelper.websocketApi.whiteboardSession.read.event);
     });
-
-
   }
 
   @SubscribeMessage(HttpHelper.websocketApi.whiteboardSession.join.event)
@@ -146,7 +145,7 @@ export class WbSessionWebsocketGateway implements OnGatewayDisconnect{
   @SubscribeMessage(HttpHelper.websocketApi.whiteboardSession.update.event)
   onWbSessionUpdate(socket: Socket, packetDto:WebsocketPacketDto) {
     let wbSessionDto:WhiteboardSessionDto = packetDto.dataDto as WhiteboardSessionDto;
-    console.log("WbSessionWebsocketGateway >> onWbSessionPing >> wbSessionDto : ",wbSessionDto);
+    console.log("WbSessionWebsocketGateway >> onWbSessionUpdate >> wbSessionDto : ",wbSessionDto);
     this.whiteboardSessionDao.updateWbSession(packetDto)
       .then((resolveParam)=>{
         let userDto = resolveParam.userDto;
@@ -156,6 +155,23 @@ export class WbSessionWebsocketGateway implements OnGatewayDisconnect{
         WbSessionWebsocketGateway.responseAckPacket( socket, HttpHelper.websocketApi.whiteboardSession.update, projectDto, packetDto);
       })
   }
+
+  @SubscribeMessage(HttpHelper.websocketApi.whiteboardSession.delete.event)
+  onWbSessionDelete(socket: Socket, packetDto:WebsocketPacketDto) {
+    let wbSessionDto:WhiteboardSessionDto = packetDto.dataDto as WhiteboardSessionDto;
+    console.log("WbSessionWebsocketGateway >> onWbSessionDelete >> wbSessionDto : ",wbSessionDto);
+    this.whiteboardSessionDao.deleteWbSession(packetDto)
+      .then((resolveParam)=>{
+        let userDto = resolveParam.userDto;
+        let projectDto = resolveParam.projectDto;
+
+        WbSessionWebsocketGateway.responseAckPacket( socket, HttpHelper.websocketApi.whiteboardSession.delete, projectDto, packetDto);
+      }).catch((e)=>{
+      let reject = new RejectionEvent(RejectionEventEnum.WB_SESSION_DELETE_FAILED, e);
+      this.wsErrHandler(reject, socket, packetDto, HttpHelper.websocketApi.whiteboardSession.delete.event);
+    });
+  }
+
 
   @SubscribeMessage(HttpHelper.websocketApi.whiteboardSession.update_cursor.event)
   onCursorDataRecv(socket: Socket, packetDto:WebsocketPacketDto) {
@@ -182,7 +198,7 @@ export class WbSessionWebsocketGateway implements OnGatewayDisconnect{
       ackPacket.additionalData = additionalData;
     }
 
-    socket.emit(webSocketRequest.event, ackPacket);
+    socket.emit(webSocketRequest.event + HttpHelper.ACK_SIGN, ackPacket);
     socket.broadcast.to(packetDto.namespaceValue.toString()).emit(webSocketRequest.event, packetDto);
 
     if( webSocketRequest.event === HttpHelper.websocketApi.whiteboardSession.join.event
@@ -198,19 +214,16 @@ export class WbSessionWebsocketGateway implements OnGatewayDisconnect{
       return;
     }
     let nakPacket:WebsocketPacketDto;
+    nakPacket = WebsocketPacketDto.createNakPacket(packetDto.wsPacketSeq, packetDto.namespaceValue);
     switch (rejection.action) {
       case RejectionEventEnum.ALREADY_LOCKED:
-        nakPacket = WebsocketPacketDto.createNakPacket(packetDto.wsPacketSeq, packetDto.namespaceValue);
         nakPacket.additionalData = RejectionEventEnum.ALREADY_LOCKED;
-        socket.emit(event, nakPacket);
         break;
       case RejectionEventEnum.LOCKED_BY_ANOTHER_USER:
-        nakPacket = WebsocketPacketDto.createNakPacket(packetDto.wsPacketSeq, packetDto.namespaceValue);
         nakPacket.additionalData = RejectionEventEnum.LOCKED_BY_ANOTHER_USER;
-        socket.emit(event, nakPacket);
         break;
-
     }
+    socket.emit(event, nakPacket);
   }
 
 

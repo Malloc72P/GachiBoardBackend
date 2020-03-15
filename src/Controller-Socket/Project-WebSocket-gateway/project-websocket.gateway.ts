@@ -88,7 +88,7 @@ export class ProjectWebsocketGateway implements OnGatewayInit, OnGatewayConnecti
               let ackPacket = WebsocketPacketDto.createAckPacket(0, projectDto._id.toString());
               ackPacket.dataDto = projectDto;
               ackPacket.additionalData = this.projectSessionManagerService.getConnectedUserList(projectDto._id.toString());
-              socket.emit(HttpHelper.websocketApi.project.joinProject.event, ackPacket);
+              socket.emit(HttpHelper.websocketApi.project.joinProject.event + HttpHelper.ACK_SIGN, ackPacket);
 
               //NormalPacket 생성 후 프로젝트 참가자들에게 브로드캐스트
               let normalPacket = WebsocketPacketDto.createNormalPacket(projectDto._id.toString(), WebsocketPacketActionEnum.SPECIAL);

@@ -111,6 +111,8 @@ export class HttpHelper {
     }
   };
 
+  public static readonly ACK_SIGN = "_ack";
+
   public static readonly websocketApi = {
     project : {
       joinProject : new WebSocketRequest(
