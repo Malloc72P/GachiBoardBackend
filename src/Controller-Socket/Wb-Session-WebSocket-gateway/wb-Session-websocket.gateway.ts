@@ -1,5 +1,5 @@
 import { OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
+import { Client, Server, Socket } from 'socket.io';
 import { HttpHelper, WebSocketRequest, WebsocketValidationCheck } from '../../Model/Helper/HttpHelper/HttpHelper';
 import { UserDaoService } from '../../Model/DAO/user-dao/user-dao.service';
 import { ProjectDaoService } from '../../Model/DAO/project-dao/project-dao.service';
@@ -10,6 +10,7 @@ import { WhiteboardSessionDaoService } from '../../Model/DAO/whiteboard-session-
 import { WhiteboardSessionManagerService } from '../../Model/SessionManager/Session-Manager-Whiteboard/whiteboard-session-manager.service';
 import { WebsocketConnection } from '../../Model/SessionManager/Websocket-Connection/Websocket-Connection';
 import { GachiPointDto } from '../../Model/DTO/GachiPoint/Gachi-Point';
+import { VideoChatManagerService } from '../../Model/VideoChatManager/video-chat-manager/video-chat-manager.service';
 
 @WebSocketGateway()
 export class WbSessionWebsocketGateway implements OnGatewayDisconnect{
@@ -19,12 +20,10 @@ export class WbSessionWebsocketGateway implements OnGatewayDisconnect{
     private projectDao:ProjectDaoService,
     private whiteboardSessionDao:WhiteboardSessionDaoService,
     private whiteboardSessionManagerService:WhiteboardSessionManagerService,
+    private videoChatService: VideoChatManagerService,
+    ){ }
 
-    ){
-
-  }
-
-  handleDisconnect(client) {
+  handleDisconnect(client: Socket) {
     console.log("ProjectWebsocketGateway >> handleDisconnect >> 진입함");
     console.log("ProjectWebsocketGateway >> handleDisconnect >> client : ",client.id);
     let removedConnection:WebsocketConnection = this.whiteboardSessionManagerService.removeConnection(client.id);
@@ -46,7 +45,10 @@ export class WbSessionWebsocketGateway implements OnGatewayDisconnect{
                 console.log("WbSessionWebsocketGateway >> handleDisconnect >> USER DISCONNECT COMPLETE");
               })
           }
-        })
+        });
+
+      this.videoChatService.leaveRoom(removedConnection.namespaceString, removedConnection.participantIdToken);
+      client.broadcast.to(removedConnection.namespaceString).emit(HttpHelper.websocketApi.videoChat.leave.event, removedConnection.participantIdToken);
     }
   }
 

@@ -13,6 +13,9 @@ export enum WebsocketPacketActionEnum {
   NAK,
   JOIN,
   SPECIAL,
+  CONNECT,
+  PRODUCE,
+  CONSUME,
 }
 
 export enum WebsocketPacketScopeEnum {
