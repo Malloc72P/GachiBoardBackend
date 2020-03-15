@@ -15,7 +15,10 @@ export enum WebsocketPacketActionEnum {
   DISCONNECT,
   SPECIAL,
   OCCUPIED,
-  NOT_OCCUPIED
+  NOT_OCCUPIED,
+  CONNECT,
+  PRODUCE,
+  CONSUME,
 }
 
 export enum WebsocketPacketScopeEnum {

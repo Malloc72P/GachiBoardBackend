@@ -1,4 +1,5 @@
 import { ServerSetting } from '../../../Config/server-setting';
+import { WebsocketPacketActionEnum } from '../../DTO/WebsocketPacketDto/WebsocketPacketActionEnum';
 
 class ApiRequest {
   constructor(url, requestType){
@@ -37,7 +38,12 @@ export enum WebSocketTypeEnum {
   DISCONNECT,
   OCCUPIED,
   NOT_OCCUPIED,
-  UPDATE_ZINDEX
+  UPDATE_ZINDEX,
+  LEAVE,
+  PRODUCE,
+  PAUSE,
+  RESUME,
+  CONNECT,
 }
 export enum Z_INDEX_ACTION {
   BRING_TO_FRONT,
@@ -223,8 +229,40 @@ export class HttpHelper {
       updateZIndex : new WebSocketRequest(
         "wbItem_update_ZIndex", WebSocketTypeEnum.UPDATE_ZINDEX
       )
-    }
+    },
 
+    videoChat : {
+      join : new WebSocketRequest(
+        "videoChat_Join", WebSocketTypeEnum.JOIN
+      ),
+      leave : new WebSocketRequest(
+        "videoChat_Leave", WebSocketTypeEnum.LEAVE
+      ),
+      getRouterRtpCapabilities : new WebSocketRequest(
+        "videoChat_GetRouterRtpCapabilities", WebSocketTypeEnum.READ
+      ),
+      createTransport : new WebSocketRequest(
+        "videoChat_CreateTransport", WebSocketTypeEnum.CREATE
+      ),
+      connectTransport : new WebSocketRequest(
+        "videoChat_ConnectProduceTransport", WebSocketTypeEnum.CONNECT,
+      ),
+      produce : new WebSocketRequest(
+        "videoChat_Produce", WebSocketTypeEnum.CREATE
+      ),
+      consume : new WebSocketRequest(
+        "videoChat_Consume", WebSocketTypeEnum.CREATE
+      ),
+      mediaProduce: new WebSocketRequest(
+        "videoChat_MediaProduce", WebSocketTypeEnum.PRODUCE
+      ),
+      getProducerIds: new WebSocketRequest(
+        "videoChat_GetProducerIds", WebSocketTypeEnum.READ
+      ),
+      producerClose: new WebSocketRequest(
+        "videoChat_ProducerClose", WebSocketTypeEnum.DELETE
+      ),
+    }
   };
 
 

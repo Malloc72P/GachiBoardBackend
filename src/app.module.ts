@@ -32,6 +32,8 @@ import { WhiteboardItemDaoService } from './Model/DAO/whiteboard-item-dao/whiteb
 import { WbItemPacketSchema } from './Model/DTO/WebsocketPacketDto/WbItemPacketDto/WbItemPacket.schema';
 import { KakaoStrategyService } from './Model/SocialLogin/kakao-strategy/kakao-strategy.service';
 import { NaverStrategyService } from './Model/SocialLogin/naver-strategy/naver-strategy.service';
+import { VideoChatWebsocketGateway } from './Controller-Socket/Video-Chat-WebSocket-gateway/video-chat-websocket.gateway';
+import { VideoChatManagerService } from './Model/VideoChatManager/video-chat-manager/video-chat-manager.service';
 
 @Module({
   imports: [
@@ -120,6 +122,7 @@ import { NaverStrategyService } from './Model/SocialLogin/naver-strategy/naver-s
       KanbanWebsocketGateway,
       WbSessionWebsocketGateway,
       WbWebsocketGateway,
+      VideoChatWebsocketGateway,
       /* **************************************************** */
       /* WebSocket END */
       /* **************************************************** */
@@ -133,7 +136,13 @@ import { NaverStrategyService } from './Model/SocialLogin/naver-strategy/naver-s
       /* Project Session Manager Family END */
       /* **************************************************** */
 
-
+      /* *************************************************** */
+      /* Video Chat Manager START */
+      /* *************************************************** */
+      VideoChatManagerService,
+      /* **************************************************** */
+      /* Video Chat Manager END */
+      /* **************************************************** */
     ],
 })
 export class AppModule {}

@@ -12,6 +12,7 @@ import { WebsocketConnection } from '../../Model/SessionManager/Websocket-Connec
 import { GachiPointDto } from '../../Model/DTO/GachiPoint/Gachi-Point';
 import { WebsocketPacketActionEnum } from '../../Model/DTO/WebsocketPacketDto/WebsocketPacketActionEnum';
 import { ProjectDto } from '../../Model/DTO/ProjectDto/project-dto';
+import { VideoChatManagerService } from '../../Model/VideoChatManager/video-chat-manager/video-chat-manager.service';
 
 @WebSocketGateway()
 export class WbSessionWebsocketGateway implements OnGatewayDisconnect{
@@ -21,10 +22,10 @@ export class WbSessionWebsocketGateway implements OnGatewayDisconnect{
     private projectDao:ProjectDaoService,
     private whiteboardSessionDao:WhiteboardSessionDaoService,
     private whiteboardSessionManagerService:WhiteboardSessionManagerService,
-    ){
-  }
+    private videoChatService: VideoChatManagerService,
+    ){ }
 
-  handleDisconnect(client) {
+  handleDisconnect(client: Socket) {
     console.log("ProjectWebsocketGateway >> handleDisconnect >> 진입함");
     console.log("ProjectWebsocketGateway >> handleDisconnect >> client : ",client.id);
     let removedConnection:WebsocketConnection = this.whiteboardSessionManagerService.removeConnection(client.id);
@@ -67,7 +68,10 @@ export class WbSessionWebsocketGateway implements OnGatewayDisconnect{
                 }
               })
           }
-        })
+        });
+
+      this.videoChatService.leaveRoom(removedConnection.namespaceString, removedConnection.participantIdToken);
+      client.broadcast.to(removedConnection.namespaceString).emit(HttpHelper.websocketApi.videoChat.leave.event, removedConnection.participantIdToken);
     }
   }
 
