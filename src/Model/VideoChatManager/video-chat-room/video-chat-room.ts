@@ -19,7 +19,7 @@ export class VideoChatRoom {
   }
 
   public async load() {
-    this._worker = await mediasoup.createWorker({ rtcMinPort: 14000, rtcMaxPort: 14999 });
+    this._worker = await mediasoup.createWorker(Options.workerOption);
     let mediaCodecs = Options.mediaCodecs;
     this._router = await this._worker.createRouter({ mediaCodecs } as RouterOptions);
 

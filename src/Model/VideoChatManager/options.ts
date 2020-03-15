@@ -1,3 +1,5 @@
+import * as serverSecret from "src/Config/serverSecret.json"
+
 export class Options {
   public static mediaCodecs = [{
     kind: "audio",
@@ -16,9 +18,14 @@ export class Options {
   }];
 
   public static transportOptions = {
-    listenIps: [{ ip: "192.168.0.3", announcedIp: "112.172.140.33" }],
+    listenIps: [{ ip: serverSecret.mediaSoup_ip, announcedIp: serverSecret.mediaSoup_announceIp }],
     enableTcp: true,
     enableUdp: true,
     preferUdp: true,
   };
+
+  public static workerOption = {
+    rtcMinPort: 14000,
+    rtcMaxPort: 14999,
+  }
 }
