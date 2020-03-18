@@ -18,7 +18,7 @@ export class Options {
   }];
 
   public static transportOptions = {
-    listenIps: [{ ip: serverSecret.mediaSoup_ip, announcedIp: serverSecret.mediaSoup_announceIp }],
+    listenIps: [{ ip: serverSecret.deploy_mediaSoup_ip, announcedIp: serverSecret.deploy_mediaSoup_announceIp }],
     enableTcp: true,
     enableUdp: true,
     preferUdp: true,
