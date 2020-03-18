@@ -1,4 +1,5 @@
 import { ServerSetting } from '../../../Config/server-setting';
+import { WebsocketPacketActionEnum } from '../../DTO/WebsocketPacketDto/WebsocketPacketActionEnum';
 
 class ApiRequest {
   constructor(url, requestType){
@@ -34,9 +35,15 @@ export enum WebSocketTypeEnum {
   LOCK,
   UNLOCK,
   JOIN,
+  DISCONNECT,
   OCCUPIED,
   NOT_OCCUPIED,
-  UPDATE_ZINDEX
+  UPDATE_ZINDEX,
+  LEAVE,
+  PRODUCE,
+  PAUSE,
+  RESUME,
+  CONNECT,
 }
 export enum Z_INDEX_ACTION {
   BRING_TO_FRONT,
@@ -46,12 +53,18 @@ export enum SpecialAction {
   PASTE_COMPLETE,
   RELOCATE_PASTE_COMPLETE
 }
+export enum REST_RESPONSE{
+  ACK = 100,
+  NOT_AUTHORIZED = 400,
+  INVALID_PARTICIPANT = 401
+}
 
 
 export enum WebsocketValidationCheck {
   INVALID_USER,
   INVALID_PROJECT,
   INVALID_PARTICIPANT,
+  KICKED_PARTICIPANT
 }
 
 export class HttpHelper {
@@ -67,6 +80,12 @@ export class HttpHelper {
     authGoogle : new ApiRequest(
       "/auth/google",   ApiRequestTypeEnum.REDIRECT
     ),
+    authKakao : new ApiRequest(
+      "/auth/kakao",   ApiRequestTypeEnum.REDIRECT
+    ),
+    authNaver : new ApiRequest(
+      "/auth/naver",   ApiRequestTypeEnum.REDIRECT
+    ),
     protected : new ApiRequest(
       "/auth/protected",     ApiRequestTypeEnum.POST
     ),
@@ -79,14 +98,34 @@ export class HttpHelper {
       ),
       getList : new ApiRequest(
         "/project", ApiRequestTypeEnum.GET
+      ),
+      generateInviteCode : new ApiRequest(
+        "/inviteCode", ApiRequestTypeEnum.POST
+      ),
+      submitInviteCode : new ApiRequest(
+        "/inviteCode", ApiRequestTypeEnum.GET
+      ),
+      invitation : new ApiRequest(
+        "/invitation", ApiRequestTypeEnum.REDIRECT
+      ),
+      exit : new ApiRequest(
+        "/project", ApiRequestTypeEnum.DELETE
+      ),
+      patch : new ApiRequest(
+        "/project", ApiRequestTypeEnum.PATCH
       )
     }
   };
+
+  public static readonly ACK_SIGN = "_ack";
 
   public static readonly websocketApi = {
     project : {
       joinProject : new WebSocketRequest(
         "project_join",WebSocketTypeEnum.READ
+      ),
+      update : new WebSocketRequest(
+        "project_update",WebSocketTypeEnum.UPDATE
       )
     },
     kanban : {
@@ -140,6 +179,9 @@ export class HttpHelper {
       join : new WebSocketRequest(
         "wbSession_join",WebSocketTypeEnum.JOIN
       ),
+      disconnect : new WebSocketRequest(
+        "wbSession_disconnect",WebSocketTypeEnum.DISCONNECT
+      ),
       create_cursor : new WebSocketRequest(
         "wbSession_create_cursor", WebSocketTypeEnum.CREATE
       ),
@@ -163,8 +205,14 @@ export class HttpHelper {
       update : new WebSocketRequest(
         "wbItem_update", WebSocketTypeEnum.UPDATE
       ),
+      update_multiple : new WebSocketRequest(
+        "wbItem_update_multiple", WebSocketTypeEnum.UPDATE
+      ),
       delete : new WebSocketRequest(
         "wbItem_delete", WebSocketTypeEnum.DELETE
+      ),
+      delete_multiple : new WebSocketRequest(
+        "wbItem_delete_multiple", WebSocketTypeEnum.DELETE
       ),
       lock : new WebSocketRequest(
         "wbItem_lock", WebSocketTypeEnum.LOCK
@@ -181,8 +229,40 @@ export class HttpHelper {
       updateZIndex : new WebSocketRequest(
         "wbItem_update_ZIndex", WebSocketTypeEnum.UPDATE_ZINDEX
       )
-    }
+    },
 
+    videoChat : {
+      join : new WebSocketRequest(
+        "videoChat_Join", WebSocketTypeEnum.JOIN
+      ),
+      leave : new WebSocketRequest(
+        "videoChat_Leave", WebSocketTypeEnum.LEAVE
+      ),
+      getRouterRtpCapabilities : new WebSocketRequest(
+        "videoChat_GetRouterRtpCapabilities", WebSocketTypeEnum.READ
+      ),
+      createTransport : new WebSocketRequest(
+        "videoChat_CreateTransport", WebSocketTypeEnum.CREATE
+      ),
+      connectTransport : new WebSocketRequest(
+        "videoChat_ConnectProduceTransport", WebSocketTypeEnum.CONNECT,
+      ),
+      produce : new WebSocketRequest(
+        "videoChat_Produce", WebSocketTypeEnum.CREATE
+      ),
+      consume : new WebSocketRequest(
+        "videoChat_Consume", WebSocketTypeEnum.CREATE
+      ),
+      mediaProduce: new WebSocketRequest(
+        "videoChat_MediaProduce", WebSocketTypeEnum.PRODUCE
+      ),
+      getProducerIds: new WebSocketRequest(
+        "videoChat_GetProducerIds", WebSocketTypeEnum.READ
+      ),
+      producerClose: new WebSocketRequest(
+        "videoChat_ProducerClose", WebSocketTypeEnum.DELETE
+      ),
+    }
   };
 
 

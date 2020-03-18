@@ -3,15 +3,24 @@ import { ProjectDaoService } from '../../DAO/project-dao/project-dao.service';
 import { ProjectDto } from '../../DTO/ProjectDto/project-dto';
 import { ProjectSession } from './project-session/project-session';
 import { WebsocketConnection } from '../Websocket-Connection/Websocket-Connection';
-import { Socket } from 'socket.io';
+import { Server, Socket } from 'socket.io';
+import { WebsocketPacketDto } from '../../DTO/WebsocketPacketDto/WebsocketPacketDto';
+import { WebsocketPacketActionEnum } from '../../DTO/WebsocketPacketDto/WebsocketPacketActionEnum';
+import { HttpHelper, WebSocketRequest } from '../../Helper/HttpHelper/HttpHelper';
 
 @Injectable()
 export class ProjectSessionManagerService {
   private readonly websocketConnectionPool:Array<WebsocketConnection>;
+  private wsServer:Server;
   constructor(
     private projectDaoService:ProjectDaoService
   ){
     this.websocketConnectionPool = new Array<WebsocketConnection>();
+  }
+
+  initService(server:Server){
+    console.log("ProjectSessionManagerService >> initService >> 진입함");
+    this.wsServer = server;
   }
 
   addConnection(socket:Socket, idToken, projectId){
@@ -57,6 +66,26 @@ export class ProjectSessionManagerService {
       }
     }
     return userList;
+  }
+  getConnectionByIdToken(idToken){
+    for(let connection of this.websocketConnectionPool){
+      if (connection.participantIdToken === idToken) {
+        return connection;
+      }
+    }
+  }
+
+  broadcastToProjectMember(projectId, wsAction:WebsocketPacketActionEnum, wsRequest:WebSocketRequest, data?, additionalData?){
+    let normalPacket = WebsocketPacketDto.createNormalPacket(projectId, wsAction);
+    normalPacket.dataDto = data;
+    normalPacket.additionalData = additionalData;
+    if(this.wsServer){
+      this.wsServer.to(projectId).emit(
+        wsRequest.event, normalPacket
+      );
+    }else{
+      console.warn("ProjectSessionManagerService >> broadcastToProjectMember >> this.wsServer : ",this.wsServer);
+    }
   }
 
   prettyPrintConnectionPool(){

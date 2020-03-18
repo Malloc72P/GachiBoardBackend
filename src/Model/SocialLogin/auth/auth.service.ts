@@ -10,7 +10,9 @@ import { ServerSecret } from "../../../Config/server-secret";
 
 export enum Provider
 {
-  GOOGLE = 'google'
+  GOOGLE  = 'google',
+  KAKAO   = 'kakao',
+  NAVER   = 'naver',
 }
 /*
 * Social Login Api서버에서 보내준 써드파티 아이디와 프로바이더를 이용해서 JWT토큰을 만들어주는 서비스개체임.

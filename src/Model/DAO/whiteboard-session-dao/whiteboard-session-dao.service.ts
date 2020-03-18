@@ -37,6 +37,11 @@ export class WhiteboardSessionDaoService {
   async update(_id, wbSessionDto:WhiteboardSessionDto): Promise<any> {
     return await this.wbSessionModel.updateOne({_id : _id}, wbSessionDto).exec();
   }
+  async deleteOne(_id): Promise<any> {
+    return await this.wbSessionModel.deleteOne({ _id: _id })
+      .exec();
+  }
+
 
   async createWbSession(packetDto:WebsocketPacketDto): Promise<any>{
     let wbSessionDto:WhiteboardSessionDto = packetDto.dataDto as WhiteboardSessionDto;
@@ -138,6 +143,54 @@ export class WhiteboardSessionDaoService {
           resolve(resolveParam);
         })//then
       })//then
+    });
+  }
+
+  async updateWbSession(packetDto:WebsocketPacketDto): Promise<any>{
+    let wbSessionDto:WhiteboardSessionDto = packetDto.dataDto as WhiteboardSessionDto;
+    return new Promise<any>((resolve, reject)=>{
+      this.projectDao.verifyRequest(packetDto.senderIdToken, packetDto.namespaceValue, packetDto.accessToken)
+        .then((data)=>{
+          let userDto = data.userDto;
+          let projectDto = data.projectDto;
+
+          let wbSessionId = wbSessionDto._id;
+          console.log("WhiteboardSessionDaoService >> updateWbSession >> wbSessionId : ",wbSessionId);
+
+          this.findOne(wbSessionId).then((foundWbSessionDto:WhiteboardSessionDto)=>{
+            foundWbSessionDto.title = wbSessionDto.title;
+            this.update(foundWbSessionDto._id, foundWbSessionDto).then(()=>{
+              let resolveParam = this.createResolveParameter(userDto, projectDto, foundWbSessionDto);
+              resolve(resolveParam);
+            });
+          });
+        });
+    });
+  }
+
+  async deleteWbSession(packetDto:WebsocketPacketDto): Promise<any>{
+    let wbSessionDto:WhiteboardSessionDto = packetDto.dataDto as WhiteboardSessionDto;
+    return new Promise<any>((resolve, reject)=>{
+      this.projectDao.verifyRequest(packetDto.senderIdToken, packetDto.namespaceValue, packetDto.accessToken)
+        .then((data)=>{
+          let userDto = data.userDto;
+          let projectDto = data.projectDto;
+
+          let wbSessionId = wbSessionDto._id;
+          console.log("WhiteboardSessionDaoService >> deleteWbSession >> wbSessionId : ",wbSessionId);
+
+          this.findOne(wbSessionId).then((foundWbSessionDto:WhiteboardSessionDto)=>{
+            if(foundWbSessionDto.connectedUsers.length > 0){
+              reject(new Error("WB SESSION IS NOT EMPTY"));
+              return;
+            }
+            foundWbSessionDto.title = wbSessionDto.title;
+            this.deleteOne(foundWbSessionDto._id).then(()=>{
+              let resolveParam = this.createResolveParameter(userDto, projectDto, foundWbSessionDto);
+              resolve(resolveParam);
+            });
+          });
+        });
     });
   }
 

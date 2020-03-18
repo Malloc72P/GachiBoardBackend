@@ -30,6 +30,10 @@ import { WhiteboardSessionManagerService } from './Model/SessionManager/Session-
 import { WbWebsocketGateway } from './Controller-Socket/Wb-WebSocket-gateway/wb-websocket.gateway';
 import { WhiteboardItemDaoService } from './Model/DAO/whiteboard-item-dao/whiteboard-item-dao.service';
 import { WbItemPacketSchema } from './Model/DTO/WebsocketPacketDto/WbItemPacketDto/WbItemPacket.schema';
+import { KakaoStrategyService } from './Model/SocialLogin/kakao-strategy/kakao-strategy.service';
+import { NaverStrategyService } from './Model/SocialLogin/naver-strategy/naver-strategy.service';
+import { VideoChatWebsocketGateway } from './Controller-Socket/Video-Chat-WebSocket-gateway/video-chat-websocket.gateway';
+import { VideoChatManagerService } from './Model/VideoChatManager/video-chat-manager/video-chat-manager.service';
 
 @Module({
   imports: [
@@ -88,6 +92,8 @@ import { WbItemPacketSchema } from './Model/DTO/WebsocketPacketDto/WbItemPacketD
       /* Auth Service START */
       /* *************************************************** */
       GoogleStrategyService,
+      KakaoStrategyService,
+      NaverStrategyService,
       JwtStrategyService,
       AuthService,
       /* **************************************************** */
@@ -116,6 +122,7 @@ import { WbItemPacketSchema } from './Model/DTO/WebsocketPacketDto/WbItemPacketD
       KanbanWebsocketGateway,
       WbSessionWebsocketGateway,
       WbWebsocketGateway,
+      VideoChatWebsocketGateway,
       /* **************************************************** */
       /* WebSocket END */
       /* **************************************************** */
@@ -129,7 +136,13 @@ import { WbItemPacketSchema } from './Model/DTO/WebsocketPacketDto/WbItemPacketD
       /* Project Session Manager Family END */
       /* **************************************************** */
 
-
+      /* *************************************************** */
+      /* Video Chat Manager START */
+      /* *************************************************** */
+      VideoChatManagerService,
+      /* **************************************************** */
+      /* Video Chat Manager END */
+      /* **************************************************** */
     ],
 })
 export class AppModule {}

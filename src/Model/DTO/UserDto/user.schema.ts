@@ -3,7 +3,7 @@ import { Schema } from 'inspector';
 import { ProjectDto } from '../ProjectDto/project-dto';
 
 export const UsersSchema = new mongoose.Schema({
-  email     : { type: String, required: true, unique: true},
+  email     : { type: String, required: true},
   regDate   : { type: Date, default: Date.now },
   idToken   : String,
   accessToken : String,

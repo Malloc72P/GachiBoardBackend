@@ -1,6 +1,6 @@
-import { OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import { OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { HttpHelper, WebsocketValidationCheck } from '../../Model/Helper/HttpHelper/HttpHelper';
+import { HttpHelper, WebSocketRequest, WebsocketValidationCheck } from '../../Model/Helper/HttpHelper/HttpHelper';
 import { ProjectDto } from '../../Model/DTO/ProjectDto/project-dto';
 import { UserDto } from '../../Model/DTO/UserDto/user-dto';
 import { UserDaoService } from '../../Model/DAO/user-dao/user-dao.service';
@@ -8,16 +8,20 @@ import { ProjectDaoService } from '../../Model/DAO/project-dao/project-dao.servi
 import { ProjectSessionManagerService } from '../../Model/SessionManager/Session-Manager-Project/project-session-manager.service';
 import { WebsocketPacketDto } from '../../Model/DTO/WebsocketPacketDto/WebsocketPacketDto';
 import { WebsocketPacketActionEnum, WebsocketPacketScopeEnum } from '../../Model/DTO/WebsocketPacketDto/WebsocketPacketActionEnum';
+import { ParticipantState } from '../../Model/DTO/ProjectDto/ParticipantDto/participant-dto';
 
 @WebSocketGateway()
-export class ProjectWebsocketGateway implements OnGatewayConnection, OnGatewayDisconnect{
+export class ProjectWebsocketGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect{
 
   constructor(
     private userDao:UserDaoService,
     private projectDao:ProjectDaoService,
     private projectSessionManagerService:ProjectSessionManagerService
     ){
+  }
 
+  afterInit(server: Server): any {
+    this.projectSessionManagerService.initService(this.server);
   }
 
   @WebSocketServer() server: Server;
@@ -33,15 +37,10 @@ export class ProjectWebsocketGateway implements OnGatewayConnection, OnGatewayDi
 
 
   @SubscribeMessage(HttpHelper.websocketApi.project.joinProject.event)
-  onJoinProject(socket: Socket, data) {
+  async onJoinProject(socket: Socket, data) {
     let idToken = data.idToken;
     let accessToken = data.accessToken;
     let project_id = data.project_id;
-    console.log("ProjectWebsocketGateway >> onJoinProject >> idToken : ",idToken);
-    console.log("ProjectWebsocketGateway >> onJoinProject >> accessToken : ",accessToken);
-    console.log("ProjectWebsocketGateway >> onJoinProject >> project_id : ",project_id);
-
-    console.log("ProjectWebsocketGateway >> onJoinProject >> socket : ",socket.id);
 
     //this.projectSessionManagerService.checkAlreadyJoined(project_id, idToken);
 
@@ -57,10 +56,23 @@ export class ProjectWebsocketGateway implements OnGatewayConnection, OnGatewayDi
               if(!projectDto){
                 throw WebsocketValidationCheck.INVALID_PROJECT;
               }
-              console.log("ProjectWebsocketGateway >> projectDao >> findOne >> projectDto : ",projectDto);
               let participantDto = this.projectDao.getParticipantByUserDto(projectDto, userDto);
               if(!participantDto){
                 throw WebsocketValidationCheck.INVALID_PARTICIPANT;
+              }
+              if(participantDto.state === ParticipantState.NOT_AVAIL){
+                let participatingProjectList:Array<ProjectDto> = userDto.participatingProjects as Array<ProjectDto>;
+                for(let i = 0 ; i < participatingProjectList.length; i++){
+                  let participatingProject = participatingProjectList[i];
+                  if (participatingProject._id.toString() === projectDto._id.toString()) {
+                    participatingProjectList.splice(i, 1);
+                  }
+                }
+                this.userDao.update(userDto._id, userDto).then(()=>{
+                  this.onJoinProjectErrorHandler(WebsocketValidationCheck.KICKED_PARTICIPANT,
+                    socket, HttpHelper.websocketApi.project.joinProject, project_id);
+                });
+                return;
               }
               //#### 최종적으로 성공한 경우
               let projectNamespace = projectDto._id;
@@ -76,7 +88,7 @@ export class ProjectWebsocketGateway implements OnGatewayConnection, OnGatewayDi
               let ackPacket = WebsocketPacketDto.createAckPacket(0, projectDto._id.toString());
               ackPacket.dataDto = projectDto;
               ackPacket.additionalData = this.projectSessionManagerService.getConnectedUserList(projectDto._id.toString());
-              socket.emit(HttpHelper.websocketApi.project.joinProject.event, ackPacket);
+              socket.emit(HttpHelper.websocketApi.project.joinProject.event + HttpHelper.ACK_SIGN, ackPacket);
 
               //NormalPacket 생성 후 프로젝트 참가자들에게 브로드캐스트
               let normalPacket = WebsocketPacketDto.createNormalPacket(projectDto._id.toString(), WebsocketPacketActionEnum.SPECIAL);
@@ -87,26 +99,34 @@ export class ProjectWebsocketGateway implements OnGatewayConnection, OnGatewayDi
 
             })
             .catch((rejection)=>{
-              this.onJoinProjectErrorHandler(socket.id, project_id, idToken, rejection);
+              this.onJoinProjectErrorHandler(rejection, socket, HttpHelper.websocketApi.project.joinProject, project_id);
             });
         })
         .catch((rejection)=>{
-          this.onJoinProjectErrorHandler(socket.id, project_id, idToken, rejection);
+          this.onJoinProjectErrorHandler(rejection, socket, HttpHelper.websocketApi.project.joinProject, project_id);
         });
-    }catch (e) {
-      console.log("ProjectWebsocketGateway >> onJoinProject >> e : ",e);
-      console.log("ProjectWebsocketGateway >> onJoinProject >> e : ",e.message);
-      if(e === 'already connected'){
-        socket.emit(HttpHelper.websocketApi.project.joinProject.event,
-          {result : 'already connected'});
-        return;
-      }
+    }catch (rejection) {
+      this.onJoinProjectErrorHandler(rejection, socket, HttpHelper.websocketApi.project.joinProject, project_id);
     }
   }
 
-  onJoinProjectErrorHandler(socketId, projectId, idToken, e){
-    console.log("ProjectWebsocketGateway >> onJoinProjectErrorHandler >> e : ",e);
-
+  onJoinProjectErrorHandler(rejection:WebsocketValidationCheck, socket, wsRequest:WebSocketRequest, projectId, data?){
+    console.log("ProjectWebsocketGateway >> onJoinProjectErrorHandler >> rejection : ",WebsocketValidationCheck[rejection]);
+    let nakPacket = WebsocketPacketDto.createNakPacket(0, projectId);
+    nakPacket.dataDto = rejection;
+    switch (rejection) {
+      case WebsocketValidationCheck.INVALID_USER:
+        break;
+      case WebsocketValidationCheck.INVALID_PROJECT:
+        break;
+      case WebsocketValidationCheck.INVALID_PARTICIPANT:
+        break;
+      case WebsocketValidationCheck.KICKED_PARTICIPANT:
+        break;
+    }
+    console.log("ProjectWebsocketGateway >> onJoinProjectErrorHandler >> nakPacket : ",nakPacket);
+    socket.emit(wsRequest.event, nakPacket);
   }
+
 
 }

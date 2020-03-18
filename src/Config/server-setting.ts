@@ -19,8 +19,9 @@ export class ServerSetting {
   public static readonly dbUrl            = ServerSetting.dbProtocol + ServerSetting.databaseDomain + ServerSetting.dbPort + ServerSetting.dbName;
   public static readonly nestUrl          = ServerSetting.serverProtocol + ServerSetting.backendDomain + ServerSetting.nestPort;
 
-  public static readonly callbackURL      = ServerSetting.nestUrl
-                                              + "/auth/google/callback";
+  public static readonly googleCallbackURL      = ServerSetting.nestUrl + "/auth/google/callback";
+  public static readonly kakaoCallbackURL      = ServerSetting.nestUrl + "/auth/kakao/callback";
+  public static readonly naverCallbackURL      = ServerSetting.nestUrl + "/auth/naver/callback";
 
   public static readonly ngRoutes = {
     "loginSuccess" : ServerSetting.ngUrl + "/login/success/",

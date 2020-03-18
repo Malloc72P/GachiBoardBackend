@@ -5,7 +5,7 @@ import { UserDaoService } from '../../../Model/DAO/user-dao/user-dao.service';
 import { ProjectDaoService } from '../../../Model/DAO/project-dao/project-dao.service';
 import { InviteCodeDto } from '../../../Model/DTO/ProjectDto/InviteCodeDto/InviteCodeDto';
 import { UserDto } from '../../../Model/DTO/UserDto/user-dto';
-import { ParticipantDto } from '../../../Model/DTO/ProjectDto/ParticipantDto/participant-dto';
+import { ParticipantDto, ParticipantState } from '../../../Model/DTO/ProjectDto/ParticipantDto/participant-dto';
 import { AuthorityLevel } from '../../../Model/DTO/ProjectDto/ParticipantDto/authority-level.enum';
 
 const UniqueString = require('unique-string');
@@ -83,9 +83,21 @@ export class InviteCodeController {
           if(realInviteCode.remainCount <= 0){
             throw "InviteCode is expired";
           }
+
           let newParticipant = ParticipantDto.createPriticipantDto(userDto);
           newParticipant.authorityLevel = AuthorityLevel.NORMAL;
-          projectDto.participantList.push(newParticipant);
+          let isExist = false;
+          for(let participantDto of projectDto.participantList){
+            if(participantDto.idToken === newParticipant.idToken){
+              isExist = true;
+              participantDto.state = ParticipantState.AVAIL;
+              participantDto.authorityLevel = AuthorityLevel.NORMAL;
+              break;
+            }
+          }
+          if (!isExist) {
+            projectDto.participantList.push(newParticipant);
+          }
 
           realInviteCode.remainCount--;
           if(realInviteCode.remainCount <= 0){
@@ -97,7 +109,9 @@ export class InviteCodeController {
             .then(()=>{
               userDto.participatingProjects.push(projectDto._id);
               this.userDao.update(userDto._id, userDto).then(()=>{
-                res.status(HttpStatus.CREATED).send({result : "success"});
+                this.userDao.findOne(userDto.idToken).then((resultUserDto:UserDto)=>{
+                  res.status(HttpStatus.CREATED).send({result : resultUserDto});
+                });
               });
           });
       });

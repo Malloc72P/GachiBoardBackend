@@ -9,6 +9,8 @@ export class WhiteboardItemDto {
   public isGrouped;
   public parentEdtGroupId;
 
+  public groupedIdList:Array<any> = new Array<any>();
+
   constructor(id, type, center: GachiPointDto, isGrouped, parentEdtGroupId) {
     this.id = id;
     this.type = type;

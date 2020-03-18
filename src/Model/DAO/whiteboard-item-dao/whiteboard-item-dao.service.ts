@@ -12,6 +12,7 @@ import { WhiteboardItemType } from '../../Helper/data-type-enum/data-type.enum';
 import { EditableLinkDto } from '../../DTO/WhiteboardItemDto/WhiteboardShapeDto/LinkPortDto/EditableLinkDto/editable-link-dto';
 import { SimpleRasterDto } from '../../DTO/WhiteboardItemDto/WhiteboardShapeDto/EditableRasterDto/SimpleRasterDto/simple-raster-dto';
 import { Z_INDEX_ACTION } from '../../Helper/HttpHelper/HttpHelper';
+import { GlobalSelectedGroupDto } from '../../DTO/WhiteboardItemDto/ItemGroupDto/GlobalSelectedGroupDto/GlobalSelectedGroupDto';
 
 @Injectable()
 export class WhiteboardItemDaoService {
@@ -104,7 +105,7 @@ export class WhiteboardItemDaoService {
 
 
           }).catch((e)=>{
-            console.log("WhiteboardItemDaoService >> saveMultipleWbItem >> e : ",e);
+            // console.log("WhiteboardItemDaoService >> saveMultipleWbItem >> e : ",e);
             reject(new RejectionEvent(RejectionEventEnum.UPDATE_FAILED, e))
           });
 
@@ -142,7 +143,7 @@ export class WhiteboardItemDaoService {
       if(wbItemDto.type === WhiteboardItemType.EDITABLE_LINK){
         let edtLink:EditableLinkDto = wbItemDto as EditableLinkDto;
         if(!edtLink.fromLinkPort || !edtLink.toLinkPort){
-          console.log("WhiteboardItemDaoService >> saveMultipleDocument >> trap");
+          // console.log("WhiteboardItemDaoService >> saveMultipleDocument >> trap");
         }
         if(edtLink.fromLinkPort){
           edtLink.fromLinkPort.ownerWbItemId = idMap.get(edtLink.fromLinkPort.ownerWbItemId);
@@ -204,6 +205,55 @@ export class WhiteboardItemDaoService {
             .catch((e)=>{
               reject(new RejectionEvent(RejectionEventEnum.UPDATE_FAILED, e))
             });
+
+        })
+        .catch((e)=>{
+          reject(new RejectionEvent(RejectionEventEnum.UPDATE_FAILED, e))
+        });
+    });
+  }
+  async updateMultipleWbItem(packetDto:WebsocketPacketDto): Promise<any>{
+    return new Promise<any>((resolve, reject)=>{
+      let wbItemDtos:Array<WhiteboardItemDto> = packetDto.dataDto as Array<WhiteboardItemDto>;
+      this.wbSessionDao.verifyRequest(packetDto.senderIdToken, packetDto.namespaceValue, packetDto.accessToken)
+        .then(async (data)=>{
+          let userDto = data.userDto;
+          let wbSessionDto = data.wbSessionDto;
+
+          let updateList:Array<WbItemPacketDto> = new Array<WbItemPacketDto>();
+
+          for(let wbItemDto of wbItemDtos){
+            let foundWbItem:WbItemPacketDto = await this.wbItemPacketModel.findOne({ _id: wbItemDto.id }).exec();
+
+            if (foundWbItem) {
+              foundWbItem.version++;
+              foundWbItem.lastModifier = userDto.idToken;
+              foundWbItem.modifiedDate = new Date();
+
+              if(wbItemDto.type === WhiteboardItemType.SIMPLE_RASTER){
+                let simpleRasterDto:SimpleRasterDto = wbItemDto as SimpleRasterDto;
+                let foundSimpleRasterDto:SimpleRasterDto = foundWbItem.wbItemDto as SimpleRasterDto;
+                simpleRasterDto.imageBlob = foundSimpleRasterDto.imageBlob;
+              }
+
+              foundWbItem.wbItemDto = wbItemDto;
+              // console.log("WhiteboardItemDaoService >> updateMultipleWbItem >> foundWbItem : ",foundWbItem);
+              await this.wbItemPacketModel.updateOne({ _id: foundWbItem._id }, foundWbItem).exec();
+              updateList.push(foundWbItem);
+            }
+          }
+          for(let updateItem of updateList){
+            if(updateItem.wbItemDto.type === WhiteboardItemType.SIMPLE_RASTER){
+              let foundSimpleRasterDto:SimpleRasterDto = updateItem.wbItemDto as SimpleRasterDto;
+              foundSimpleRasterDto.imageBlob = null;
+            }
+            let resolveParam = {
+              userDto : userDto,
+              wbSessionDto : wbSessionDto,
+              updatedWbItemPacket : updateList
+            };
+            resolve(resolveParam);
+          }
 
         })
         .catch((e)=>{
@@ -279,45 +329,33 @@ export class WhiteboardItemDaoService {
         await this.wbItemPacketModel.updateOne({_id : wbItempacket._id}, wbItempacket).exec();
       }
     } catch (e) {
-      console.log("WhiteboardItemDaoService >> updateWbItemPacketList >> e : ",e);
+      // console.log("WhiteboardItemDaoService >> updateWbItemPacketList >> e : ",e);
     }
   }
 
   async occupyItem(packetDto:WebsocketPacketDto): Promise<any>{
     return new Promise<any>((resolve, reject)=>{
-      let wbItemDto:WhiteboardItemDto = packetDto.dataDto as WhiteboardItemDto;
+      let gsgDto:GlobalSelectedGroupDto = packetDto.dataDto as GlobalSelectedGroupDto;
       this.wbSessionDao.verifyRequest(packetDto.senderIdToken, packetDto.namespaceValue, packetDto.accessToken)
-        .then((data)=>{
+        .then( async (data)=>{
           let userDto = data.userDto;
           let wbSessionDto = data.wbSessionDto;
-          let wbItemPacket:WbItemPacketDto;
 
-          this.findOne(wbItemDto.id)
-            .then((foundWbItemPacket:WbItemPacketDto)=>{
-              // foundWbItemPacket.wbItemDto.id = foundWbItemPacket._id;
-              console.log("WhiteboardItemDaoService >> occupyItem >> foundWbItemPacket : ",foundWbItemPacket);
-              if(foundWbItemPacket.occupiedBy && foundWbItemPacket.occupiedBy !== userDto.idToken){
-                reject(new RejectionEvent(RejectionEventEnum.OCCUPIED_BY_ANOTHER_USER, foundWbItemPacket));
-                return;
-              }
-              foundWbItemPacket.occupiedBy = userDto.idToken;
+          for(let itemId of gsgDto.wbItemGroup){
+            let foundPacketItem:WbItemPacketDto = await this.wbItemPacketModel.findOne({ _id: itemId }).exec();
+            if(foundPacketItem.occupiedBy && foundPacketItem.occupiedBy !== userDto.idToken){
+              reject(new RejectionEvent(RejectionEventEnum.OCCUPIED_BY_ANOTHER_USER, foundPacketItem));
+              return;
+            }
+            foundPacketItem.occupiedBy = userDto.idToken;
+            await this.wbItemPacketModel.updateOne({_id : foundPacketItem._id}, foundPacketItem).exec();
+          }
 
-              this.update(foundWbItemPacket._id, foundWbItemPacket)
-                .then(()=>{
-                  let resolveParam = {
-                    userDto : userDto,
-                    wbSessionDto : wbSessionDto,
-                    updatedWbItemPacket : foundWbItemPacket
-                  };
-                  resolve(resolveParam);
-                })
-                .catch((e)=>{
-                  reject(new RejectionEvent(RejectionEventEnum.UPDATE_FAILED, e))
-                });
-            })
-            .catch((e)=>{
-              reject(new RejectionEvent(RejectionEventEnum.UPDATE_FAILED, e))
-            });
+          let resolveParam = {
+            userDto : userDto,
+            wbSessionDto : wbSessionDto
+          };
+          resolve(resolveParam);
 
         })
         .catch((e)=>{
@@ -327,43 +365,29 @@ export class WhiteboardItemDaoService {
   }
   async notOccupyItem(packetDto:WebsocketPacketDto): Promise<any>{
     return new Promise<any>((resolve, reject)=>{
-      let wbItemDto:WhiteboardItemDto = packetDto.dataDto as WhiteboardItemDto;
+      let gsgDto:GlobalSelectedGroupDto = packetDto.dataDto as GlobalSelectedGroupDto;
       this.wbSessionDao.verifyRequest(packetDto.senderIdToken, packetDto.namespaceValue, packetDto.accessToken)
-        .then((data)=>{
+        .then(async (data)=>{
           let userDto = data.userDto;
           let wbSessionDto = data.wbSessionDto;
-          let wbItemPacket:WbItemPacketDto;
 
-          this.findOne(wbItemDto.id)
-            .then((foundWbItemPacket:WbItemPacketDto)=>{
-              // foundWbItemPacket.wbItemDto.id = foundWbItemPacket._id;
-              console.log("WhiteboardItemDaoService >> occupyItem >> foundWbItemPacket : ",foundWbItemPacket);
-              if(!foundWbItemPacket.occupiedBy){
-                reject(new RejectionEvent(RejectionEventEnum.NOT_OCCUPIED, foundWbItemPacket));
-                return;
-              }
-              if(foundWbItemPacket.occupiedBy && foundWbItemPacket.occupiedBy !== userDto.idToken){
-                reject(new RejectionEvent(RejectionEventEnum.OCCUPIED_BY_ANOTHER_USER, foundWbItemPacket));
-                return;
-              }
-              foundWbItemPacket.occupiedBy = null;
+          for(let itemId of gsgDto.wbItemGroup){
+            let foundPacketItem:WbItemPacketDto = await this.wbItemPacketModel.findOne({ _id: itemId }).exec();
 
-              this.update(foundWbItemPacket._id, foundWbItemPacket)
-                .then(()=>{
-                  let resolveParam = {
-                    userDto : userDto,
-                    wbSessionDto : wbSessionDto,
-                    updatedWbItemPacket : foundWbItemPacket
-                  };
-                  resolve(resolveParam);
-                })
-                .catch((e)=>{
-                  reject(new RejectionEvent(RejectionEventEnum.UPDATE_FAILED, e))
-                });
-            })
-            .catch((e)=>{
-              reject(new RejectionEvent(RejectionEventEnum.UPDATE_FAILED, e))
-            });
+            if(foundPacketItem.occupiedBy && foundPacketItem.occupiedBy !== userDto.idToken){
+              reject(new RejectionEvent(RejectionEventEnum.OCCUPIED_BY_ANOTHER_USER, foundPacketItem));
+              return;
+            }
+            foundPacketItem.occupiedBy = null;
+
+            await this.wbItemPacketModel.updateOne({_id : foundPacketItem._id}, foundPacketItem).exec();
+          }
+
+          let resolveParam = {
+            userDto : userDto,
+            wbSessionDto : wbSessionDto
+          };
+          resolve(resolveParam);
 
         })
         .catch((e)=>{
@@ -394,6 +418,25 @@ export class WhiteboardItemDaoService {
 
             });
 
+        });
+    });
+  }
+  async deleteMultipleWbItem(packetDto:WebsocketPacketDto): Promise<any>{
+    return new Promise<any>((resolve, reject)=>{
+      let wbItemDtoList:Array<WhiteboardItemDto> = packetDto.dataDto as Array<WhiteboardItemDto>;
+      this.wbSessionDao.verifyRequest(packetDto.senderIdToken, packetDto.namespaceValue, packetDto.accessToken)
+        .then( async (data)=>{
+          let userDto = data.userDto;
+          let wbSessionDto = data.wbSessionDto;
+          for(let wbItemDto of wbItemDtoList){
+            await this.wbItemPacketModel.deleteOne({ _id: wbItemDto.id }).exec();
+          }
+
+          let resolveParam = {
+            userDto : userDto,
+            wbSessionDto : wbSessionDto
+          };
+          resolve(resolveParam);
         });
     });
   }

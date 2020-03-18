@@ -9,6 +9,7 @@ export class ParticipantDto {
   public email      : string;
   public userName   : string;
   public profileImg : string;
+  public state      : ParticipantState;
 
   public static createPriticipantDto(userDto:UserDto){
     let newParticipant = new ParticipantDto();
@@ -18,6 +19,12 @@ export class ParticipantDto {
     newParticipant.authorityLevel = AuthorityLevel.PROJECT_MANAGER;
     newParticipant.profileImg = userDto.profileImg;
     newParticipant.startDate = new Date();
+    newParticipant.state = ParticipantState.AVAIL;
     return newParticipant;
   }
+}
+
+export enum ParticipantState {
+  AVAIL,
+  NOT_AVAIL,
 }
