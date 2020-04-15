@@ -5,8 +5,8 @@ export class ItemGroupDto extends WhiteboardItemDto{
   public wbItemIdGroup: Array<number>;
 
 
-  constructor(id, type, center: GachiPointDto, isGrouped, parentEdtGroupId, wbItemIdGroup: Array<number>) {
-    super(id, type, center, isGrouped, parentEdtGroupId);
+  constructor(id, type, center: GachiPointDto, isGrouped, parentEdtGroupId, wbItemIdGroup: Array<number>, isLocked) {
+    super(id, type, center, isGrouped, parentEdtGroupId, isLocked);
     this.wbItemIdGroup = wbItemIdGroup;
   }
 }
