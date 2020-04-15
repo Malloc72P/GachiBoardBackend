@@ -9,8 +9,9 @@ export class EditableShapeDto extends WhiteboardShapeDto{
   public textStyle:any;
 
 
-  constructor(id, type, center: GachiPointDto, isGrouped, parentEdtGroupId, width, height, borderColor, borderWidth, fillColor, opacity, linkPortsDto: Array<LinkPortDto>, textContent, rawTextContent, textStyle: any) {
-    super(id, type, center, isGrouped, parentEdtGroupId, width, height, borderColor, borderWidth, fillColor, opacity, linkPortsDto);
+  constructor(id, type, center: GachiPointDto, isGrouped, parentEdtGroupId, width, height, borderColor, borderWidth, fillColor, opacity,
+              linkPortsDto: Array<LinkPortDto>, textContent, rawTextContent, textStyle: any, isLocked) {
+    super(id, type, center, isGrouped, parentEdtGroupId, width, height, borderColor, borderWidth, fillColor, opacity, linkPortsDto, isLocked);
     this.textContent = textContent;
     this.rawTextContent = rawTextContent;
     this.textStyle = textStyle;

@@ -111,6 +111,7 @@ export class WbWebsocketGateway{
   @SubscribeMessage(HttpHelper.websocketApi.whiteboardItem.update_multiple.event)
   onMultipleWbItemUpdateRequest(socket: Socket, packetDto:WebsocketPacketDto) {
     // console.log("WbWebsocketGateway >> onMultipleWbItemUpdateRequest >> 진입함");
+    console.log("WbWebsocketGateway >> onMultipleWbItemUpdateRequest >> packetDto : ",packetDto);
     this.whiteboardItemDao.updateMultipleWbItem(packetDto)
       .then((resolveParam)=>{
         let userDto = resolveParam.userDto;
@@ -202,7 +203,7 @@ export class WbWebsocketGateway{
     ackPacket.accessToken = null;
     packetDto.accessToken = null;
     console.log(`WbWebsocketGateway >> responseAckPacket >> ${webSocketRequest.event} >> ackPacket : `,ackPacket);
-    socket.emit(webSocketRequest.event + HttpHelper.ACK_SIGN, ackPacket);
+    socket.emit(webSocketRequest.event + HttpHelper.ACK_SIGN + ackPacket.wsPacketSeq, ackPacket);
     socket.broadcast.to(packetDto.namespaceValue.toString()).emit(webSocketRequest.event, packetDto);
   }
 
