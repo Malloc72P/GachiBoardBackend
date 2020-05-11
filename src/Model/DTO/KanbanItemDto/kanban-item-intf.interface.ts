@@ -8,6 +8,6 @@ export interface KanbanItemDtoIntf extends Document{
   lockedBy  : string;
   tagIdList : Array<any>;
   isTimerStarted;
-  timerStartDate;
-  timerEndDate;
+  timerStartDate:Date;
+  timerEndDate:Date;
 }
