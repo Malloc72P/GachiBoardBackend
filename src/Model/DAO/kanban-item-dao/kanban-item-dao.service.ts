@@ -53,7 +53,7 @@ export class KanbanItemDaoService {
           let projectDto = data.projectDto;
           this.findOne(kanbanItemDto._id)
             .then((foundKanbanItem:KanbanItemDto)=>{
-              if(foundKanbanItem.lockedBy && foundKanbanItem.lockedBy !== userDto.idToken){
+              if(foundKanbanItem.lockedBy && foundKanbanItem.lockedBy === userDto.idToken){
                 reject(new RejectionEvent(RejectionEventEnum.ALREADY_LOCKED, foundKanbanItem));
               }
 
@@ -173,15 +173,15 @@ export class KanbanItemDaoService {
             originKanbanItem.title = kanbanItemDto.title;
             originKanbanItem.color = kanbanItemDto.color;
             originKanbanItem.userInfo = kanbanItemDto.userInfo;
-            console.log("KanbanItemDaoService >>  >> originKanbanItem : ",originKanbanItem);
+            //console.log("KanbanItemDaoService >>  >> originKanbanItem : ",originKanbanItem);
             if(!originKanbanItem.tagIdList){
-              console.log("KanbanItemDaoService >> !originKanbanItem.tagIdList >> 진입함");
+              //console.log("KanbanItemDaoService >> !originKanbanItem.tagIdList >> 진입함");
               originKanbanItem.tagIdList =  new Array<any>();
             }else{
               originKanbanItem.tagIdList.splice(0, originKanbanItem.tagIdList.length);
             }
             for(let tagId of kanbanItemDto.tagIdList){
-              console.log("KanbanItemDaoService >>  >> originKanbanItem : ",originKanbanItem);
+              //console.log("KanbanItemDaoService >>  >> originKanbanItem : ",originKanbanItem);
               originKanbanItem.tagIdList.push(tagId);
             }
 

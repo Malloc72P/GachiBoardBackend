@@ -56,7 +56,7 @@ export class InviteCodeController {
 
     try {
       let inviteCode = param.inviteCode;
-      console.log('InviteCodeController >> onInvitation >> inviteCode : ', inviteCode);
+      //console.log('InviteCodeController >> onInvitation >> inviteCode : ', inviteCode);
       let tokenizedInviteCode = inviteCode.split('_');
       let projectId = tokenizedInviteCode[0];
       let uniqueCode = tokenizedInviteCode[1];
@@ -116,7 +116,7 @@ export class InviteCodeController {
           });
       });
     } catch (e) {
-      console.log("InviteCodeController >> onInvitation >> e : ",e);
+      //console.log("InviteCodeController >> onInvitation >> e : ",e);
       res.status(HttpStatus.CREATED).send({result : "failed"});
     }
 

@@ -29,11 +29,11 @@ export class ProjectController {
   @UseGuards(AuthGuard('jwt'))
   onCreateProject(@Req() req, @Res() res, @Body() projectDto:ProjectDto)
   {
-    console.log("ProjectController >> onCreateProject >> 진입함");
-    console.log("ProjectController >> protectedResource >> req : ",req.user);
+    //console.log("ProjectController >> onCreateProject >> 진입함");
+    //console.log("ProjectController >> protectedResource >> req : ",req.user);
 
     this.userDao.findOne(req.user).then((userDto:UserDto)=>{
-      console.log("ProjectController >>  >> userDto : ",userDto);
+      //console.log("ProjectController >>  >> userDto : ",userDto);
       let newProjectDto = new ProjectDto();
       newProjectDto.projectTitle = projectDto.projectTitle;
 
@@ -44,7 +44,7 @@ export class ProjectController {
       newProjectDto.startDate = new Date();
 
       this.projectDaoService.create(newProjectDto).then((createdProject:ProjectDto)=>{
-        console.log("ProjectController >>  >> data : ",createdProject);
+        //console.log("ProjectController >>  >> data : ",createdProject);
 
         userDto.participatingProjects.push(createdProject._id);
         this.userDao.update( userDto._id, userDto ).then(()=>{
@@ -54,25 +54,30 @@ export class ProjectController {
             this.projectDaoService.update(createdProject._id, createdProject)
               .then((updateResult)=>{
                 res.status(HttpStatus.CREATED).send(createdProject);
-            }).catch((e)=>{console.log("ProjectController >> projectDaoService.update >> e : ",e);});
-          }).catch((e)=>{console.log("ProjectController >> kanbanDataDao.create >> e : ",e);});
-        }).catch((e)=>{console.log("ProjectController >> userDao.update >> e : ",e);});
-      }).catch((e)=>{console.log("ProjectController >> projectDaoService.create >> e : ",e);});
-    }).catch((e)=>{console.log("ProjectController >> userDao.findOne >> e : ",e);});
+            }).catch((e)=>{//console.log("ProjectController >> projectDaoService.update >> e : ",e);
+            });
+          }).catch((e)=>{//console.log("ProjectController >> kanbanDataDao.create >> e : ",e);
+          });
+        }).catch((e)=>{//console.log("ProjectController >> userDao.update >> e : ",e);
+        });
+      }).catch((e)=>{//console.log("ProjectController >> projectDaoService.create >> e : ",e);
+      });
+    }).catch((e)=>{//console.log("ProjectController >> userDao.findOne >> e : ",e);
+    });
   }
 
   @Delete()
   @UseGuards(AuthGuard('jwt'))
   onExitProject(@Req() req, @Res() res, @Body() param)
   {
-    console.log("ProjectController >> onExitProject >> 진입함");
-    console.log("ProjectController >> protectedResource >> req : ",req.user);
+    //console.log("ProjectController >> onExitProject >> 진입함");
+    //console.log("ProjectController >> protectedResource >> req : ",req.user);
     let projectId = param.projectId;
 
     this.userDao.findOne(req.user).then((userDto:UserDto)=>{
-      console.log("ProjectController >> onExitProject >> projectId : ",projectId);
+      //console.log("ProjectController >> onExitProject >> projectId : ",projectId);
       this.projectDaoService.findOne(projectId).then((foundProjectDto:ProjectDto)=>{
-        console.log("ProjectController >>  >> foundProjectDto : ",foundProjectDto);
+        //console.log("ProjectController >>  >> foundProjectDto : ",foundProjectDto);
         for(let participantDto of foundProjectDto.participantList){
           if(participantDto.idToken === userDto.idToken){
             participantDto.state = ParticipantState.NOT_AVAIL;
@@ -101,16 +106,19 @@ export class ProjectController {
           this.userDao.update(userDto._id, userDto).then(()=>{
             res.status(HttpStatus.CREATED).send(userDto);
           });
-        }).catch((e)=>{console.log("ProjectController >> userDao.findOne >> e : ",e);});
-      }).catch((e)=>{console.log("ProjectController >> userDao.findOne >> e : ",e);});
-    }).catch((e)=>{console.log("ProjectController >> userDao.findOne >> e : ",e);});
+        }).catch((e)=>{//console.log("ProjectController >> userDao.findOne >> e : ",e);
+        });
+      }).catch((e)=>{//console.log("ProjectController >> userDao.findOne >> e : ",e);
+      });
+    }).catch((e)=>{//console.log("ProjectController >> userDao.findOne >> e : ",e);
+    });
   }
 
   @Patch()
   @UseGuards(AuthGuard('jwt'))
   onEditProject(@Req() req, @Res() res, @Body() updateProjectDto:ProjectDto)
   {
-    console.log("ProjectController >> onEditProject >> 진입함");
+    //console.log("ProjectController >> onEditProject >> 진입함");
     let projectId = updateProjectDto._id;
 
     this.userDao.findOne(req.user).then((userDto:UserDto)=>{
@@ -123,7 +131,7 @@ export class ProjectController {
             return;
           }
         }
-        console.log("ProjectController >>  >> 진입함");
+        //console.log("ProjectController >>  >> 진입함");
         for (let i = 0; i < foundProjectDto.participantList.length; i++) {
           let originDto:ParticipantDto = foundProjectDto.participantList[i];
           for(let j = 0 ; j < updateProjectDto.participantList.length; j++) {

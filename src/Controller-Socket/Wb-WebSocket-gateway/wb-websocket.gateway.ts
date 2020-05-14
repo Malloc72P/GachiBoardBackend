@@ -32,7 +32,7 @@ export class WbWebsocketGateway{
 
   @SubscribeMessage(HttpHelper.websocketApi.whiteboardItem.read.event)
   onWbItemGetListRequest(socket: Socket, packetDto:WebsocketPacketDto) {
-    // console.log("WbWebsocketGateway >> onWbItemGetListRequest >> 진입함");
+    // //console.log("WbWebsocketGateway >> onWbItemGetListRequest >> 진입함");
     this.whiteboardItemDao.getWbItemList(packetDto)
       .then((resolveParam)=>{
         let userDto = resolveParam.userDto;
@@ -48,7 +48,7 @@ export class WbWebsocketGateway{
   }
   @SubscribeMessage(HttpHelper.websocketApi.whiteboardItem.create.event)
   onWbItemCreateRequest(socket: Socket, packetDto:WebsocketPacketDto) {
-    // console.log("WbWebsocketGateway >> onWbItemCreateRequest >> 진입함");
+    // //console.log("WbWebsocketGateway >> onWbItemCreateRequest >> 진입함");
     this.whiteboardItemDao.saveWbItem(packetDto)
       .then((resolveParam)=>{
         let userDto = resolveParam.userDto;
@@ -61,8 +61,8 @@ export class WbWebsocketGateway{
 
   @SubscribeMessage(HttpHelper.websocketApi.whiteboardItem.create_multiple.event)
   onWbItemMultipleCreateRequest(socket: Socket, packetDto:WebsocketPacketDto) {
-    // console.log("WbWebsocketGateway >> onWbItemMultipleCreateRequest >> 진입함");
-    // console.log("WbWebsocketGateway >> onWbItemMultipleCreateRequest >> packetDto : ",packetDto);
+    // //console.log("WbWebsocketGateway >> onWbItemMultipleCreateRequest >> 진입함");
+    // //console.log("WbWebsocketGateway >> onWbItemMultipleCreateRequest >> packetDto : ",packetDto);
     this.whiteboardItemDao.saveMultipleWbItem(packetDto)
       .then((resolveParam)=>{
         let userDto = resolveParam.userDto;
@@ -82,7 +82,7 @@ export class WbWebsocketGateway{
   }
   @SubscribeMessage(HttpHelper.websocketApi.whiteboardItem.updateZIndex.event)
   onWbItemUpdateZIndexRequest(socket: Socket, packetDto:WebsocketPacketDto) {
-    // console.log("WbWebsocketGateway >> onWbItemUpdateZIndexRequest >> 진입함");
+    // //console.log("WbWebsocketGateway >> onWbItemUpdateZIndexRequest >> 진입함");
     this.whiteboardItemDao.updateWbItemsZIndex(packetDto)
       .then((resolveParam)=>{
         let userDto = resolveParam.userDto;
@@ -96,7 +96,7 @@ export class WbWebsocketGateway{
   }
   @SubscribeMessage(HttpHelper.websocketApi.whiteboardItem.update.event)
   onWbItemUpdateRequest(socket: Socket, packetDto:WebsocketPacketDto) {
-    // console.log("WbWebsocketGateway >> onWbItemUpdateRequest >> 진입함");
+    // //console.log("WbWebsocketGateway >> onWbItemUpdateRequest >> 진입함");
     this.whiteboardItemDao.updateWbItem(packetDto)
       .then((resolveParam)=>{
         let userDto = resolveParam.userDto;
@@ -110,8 +110,8 @@ export class WbWebsocketGateway{
   }
   @SubscribeMessage(HttpHelper.websocketApi.whiteboardItem.update_multiple.event)
   onMultipleWbItemUpdateRequest(socket: Socket, packetDto:WebsocketPacketDto) {
-    // console.log("WbWebsocketGateway >> onMultipleWbItemUpdateRequest >> 진입함");
-    console.log("WbWebsocketGateway >> onMultipleWbItemUpdateRequest >> packetDto : ",packetDto);
+    // //console.log("WbWebsocketGateway >> onMultipleWbItemUpdateRequest >> 진입함");
+    //console.log("WbWebsocketGateway >> onMultipleWbItemUpdateRequest >> packetDto : ",packetDto);
     this.whiteboardItemDao.updateMultipleWbItem(packetDto)
       .then((resolveParam)=>{
         let userDto = resolveParam.userDto;
@@ -126,7 +126,7 @@ export class WbWebsocketGateway{
   }
   @SubscribeMessage(HttpHelper.websocketApi.whiteboardItem.delete.event)
   onWbItemDeleteRequest(socket: Socket, packetDto:WebsocketPacketDto) {
-    // console.log("WbWebsocketGateway >> onWbItemDeleteRequest >> 진입함");
+    // //console.log("WbWebsocketGateway >> onWbItemDeleteRequest >> 진입함");
     this.whiteboardItemDao.deleteWbItem(packetDto)
       .then((resolveParam)=>{
         let userDto = resolveParam.userDto;
@@ -136,7 +136,7 @@ export class WbWebsocketGateway{
   }
   @SubscribeMessage(HttpHelper.websocketApi.whiteboardItem.delete_multiple.event)
   onMultipleWbItemDeleteRequest(socket: Socket, packetDto:WebsocketPacketDto) {
-    // console.log("WbWebsocketGateway >> onWbItemDeleteRequest >> 진입함");
+    // //console.log("WbWebsocketGateway >> onWbItemDeleteRequest >> 진입함");
     this.whiteboardItemDao.deleteMultipleWbItem(packetDto)
       .then((resolveParam)=>{
         let userDto = resolveParam.userDto;
@@ -146,21 +146,21 @@ export class WbWebsocketGateway{
   }
   @SubscribeMessage(HttpHelper.websocketApi.whiteboardItem.unlock.event)
   onWbItemLockRequest(socket: Socket, packetDto:WebsocketPacketDto) {
-    // console.log("WbWebsocketGateway >> onWbItemLockRequest >> 진입함");
+    // //console.log("WbWebsocketGateway >> onWbItemLockRequest >> 진입함");
     WbWebsocketGateway.responseAckPacket( socket, HttpHelper.websocketApi.whiteboardItem.unlock, packetDto);
   }
   @SubscribeMessage(HttpHelper.websocketApi.whiteboardItem.lock.event)
   onWbItemUnlockRequest(socket: Socket, packetDto:WebsocketPacketDto) {
-    // console.log("WbWebsocketGateway >> onWbItemUnlockRequest >> 진입함");
+    // //console.log("WbWebsocketGateway >> onWbItemUnlockRequest >> 진입함");
     WbWebsocketGateway.responseAckPacket( socket, HttpHelper.websocketApi.whiteboardItem.lock, packetDto);
   }
 
   @SubscribeMessage(HttpHelper.websocketApi.whiteboardItem.occupied.event)
   onWbItemOccupiedRequest(socket: Socket, packetDto:WebsocketPacketDto) {
-    // console.log("WbWebsocketGateway >> onWbItemOccupiedRequest >> 진입함", packetDto);
+    // //console.log("WbWebsocketGateway >> onWbItemOccupiedRequest >> 진입함", packetDto);
     this.whiteboardItemDao.occupyItem(packetDto)
       .then((resolveParam)=>{
-        // console.log("WbWebsocketGateway >> onWbItemOccupiedRequest >> 진입함");
+        // //console.log("WbWebsocketGateway >> onWbItemOccupiedRequest >> 진입함");
         let userDto = resolveParam.userDto;
         let projectDto = resolveParam.projectDto;
 
@@ -172,10 +172,10 @@ export class WbWebsocketGateway{
   }
   @SubscribeMessage(HttpHelper.websocketApi.whiteboardItem.notOccupied.event)
   onWbItemNotOccupiedRequest(socket: Socket, packetDto:WebsocketPacketDto) {
-    // console.log("WbWebsocketGateway >> onWbItemNotOccupiedRequest >> 진입함", packetDto);
+    // //console.log("WbWebsocketGateway >> onWbItemNotOccupiedRequest >> 진입함", packetDto);
     this.whiteboardItemDao.notOccupyItem(packetDto)
       .then((resolveParam)=>{
-        // console.log("WbWebsocketGateway >> onWbItemNotOccupiedRequest >> 진입함");
+        // //console.log("WbWebsocketGateway >> onWbItemNotOccupiedRequest >> 진입함");
         let userDto = resolveParam.userDto;
         let projectDto = resolveParam.projectDto;
 
@@ -190,8 +190,8 @@ export class WbWebsocketGateway{
 
 
   private static responseAckPacket(socket:Socket, webSocketRequest:WebSocketRequest, packetDto:WebsocketPacketDto,  additionalData?){
-    // console.log("WbWebsocketGateway >> responseAckPacket >> 진입함");
-    // console.log("WbWebsocketGateway >> responseAckPacket >> packetDto : ",packetDto);
+    // //console.log("WbWebsocketGateway >> responseAckPacket >> 진입함");
+    // //console.log("WbWebsocketGateway >> responseAckPacket >> packetDto : ",packetDto);
     let ackPacket = WebsocketPacketDto.createAckPacket(packetDto.wsPacketSeq, packetDto.namespaceValue);
     ackPacket.dataDto = packetDto.dataDto;
     ackPacket.additionalData = packetDto.additionalData;
@@ -202,15 +202,15 @@ export class WbWebsocketGateway{
     }
     ackPacket.accessToken = null;
     packetDto.accessToken = null;
-    console.log(`WbWebsocketGateway >> responseAckPacket >> ${webSocketRequest.event} >> ackPacket : `,ackPacket);
+    //console.log(`WbWebsocketGateway >> responseAckPacket >> ${webSocketRequest.event} >> ackPacket : `,ackPacket);
     socket.emit(webSocketRequest.event + HttpHelper.ACK_SIGN + ackPacket.wsPacketSeq, ackPacket);
     socket.broadcast.to(packetDto.namespaceValue.toString()).emit(webSocketRequest.event, packetDto);
   }
 
   wsWbItemErrHandler(rejection:RejectionEvent, socket:Socket, packetDto:WebsocketPacketDto, event){
-    // console.log("WbWebsocketGateway >> wsWbItemErrHandler >> rejection : ",rejection);
+    // //console.log("WbWebsocketGateway >> wsWbItemErrHandler >> rejection : ",rejection);
     console.warn("WbWebsocketGateway >> wsWbItemErrHandler >> reason : ",RejectionEventEnum[rejection.action]);
-    // console.log("WbWebsocketGateway >> wsWbItemErrHandler >> rejection : ",rejection.data);
+    // //console.log("WbWebsocketGateway >> wsWbItemErrHandler >> rejection : ",rejection.data);
     if(rejection.action === RejectionEventEnum.DEBUGING){
       return;
     }

@@ -90,13 +90,13 @@ export class WhiteboardSessionDaoService {
           let projectDto = data.projectDto;
 
           let wbSessionId = wbSessionDto._id;
-          console.log("WhiteboardSessionDaoService >> getWbSessionWithProtection >> wbSessionId : ",wbSessionId);
+          //console.log("WhiteboardSessionDaoService >> getWbSessionWithProtection >> wbSessionId : ",wbSessionId);
 
           this.findOne(wbSessionId).then((foundWbSessionDto:WhiteboardSessionDto)=>{
             for(let i = 0 ; i < foundWbSessionDto.connectedUsers.length; i++){
               let participantId = foundWbSessionDto.connectedUsers[i];
-              console.log("WhiteboardSessionDaoService >> joinWbSession >> participantId : ",participantId);
-              console.log("WhiteboardSessionDaoService >> joinWbSession >> userDto : ",userDto);
+              //console.log("WhiteboardSessionDaoService >> joinWbSession >> participantId : ",participantId);
+              //console.log("WhiteboardSessionDaoService >> joinWbSession >> userDto : ",userDto);
               if(participantId === userDto.idToken){
                 foundWbSessionDto.connectedUsers.splice(i, 1);
               }
@@ -155,7 +155,7 @@ export class WhiteboardSessionDaoService {
           let projectDto = data.projectDto;
 
           let wbSessionId = wbSessionDto._id;
-          console.log("WhiteboardSessionDaoService >> updateWbSession >> wbSessionId : ",wbSessionId);
+          //console.log("WhiteboardSessionDaoService >> updateWbSession >> wbSessionId : ",wbSessionId);
 
           this.findOne(wbSessionId).then((foundWbSessionDto:WhiteboardSessionDto)=>{
             foundWbSessionDto.title = wbSessionDto.title;
@@ -177,7 +177,7 @@ export class WhiteboardSessionDaoService {
           let projectDto = data.projectDto;
 
           let wbSessionId = wbSessionDto._id;
-          console.log("WhiteboardSessionDaoService >> deleteWbSession >> wbSessionId : ",wbSessionId);
+          //console.log("WhiteboardSessionDaoService >> deleteWbSession >> wbSessionId : ",wbSessionId);
 
           this.findOne(wbSessionId).then((foundWbSessionDto:WhiteboardSessionDto)=>{
             if(foundWbSessionDto.connectedUsers.length > 0){

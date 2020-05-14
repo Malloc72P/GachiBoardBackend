@@ -5,17 +5,20 @@ import { GachiPointDto } from '../../DTO/GachiPoint/Gachi-Point';
 import { WhiteboardSessionInstance } from './Whiteboard-Session-Instance/Whiteboard-Session-Instance';
 import { CursorData } from './Whiteboard-Session-Instance/Cursor-Data/Cursor-Data';
 import { ProjectDto } from '../../DTO/ProjectDto/project-dto';
+import { WhiteboardItemDaoService } from '../../DAO/whiteboard-item-dao/whiteboard-item-dao.service';
 
 @Injectable()
 export class WhiteboardSessionManagerService {
   private readonly websocketConnectionPool:Array<WebsocketConnection>;
   public wbSessionMap:Map<string, WhiteboardSessionInstance>;
-  constructor(){
+  constructor(
+    private whiteboardItemDaoService:WhiteboardItemDaoService
+  ){
     this.websocketConnectionPool = new Array<WebsocketConnection>();
     this.wbSessionMap = new Map<string, WhiteboardSessionInstance>();
   }
   addConnection(socket:Socket, idToken, projectId){
-    console.log("\nWhiteboardSessionManagerService >> addConnection >> 진입함");
+    //console.log("\nWhiteboardSessionManagerService >> addConnection >> 진입함");
     let wbConnection = this.checkConnection(socket.id);
     if(wbConnection){//이미 연결된 경우라면,
       wbConnection.socket = socket;
@@ -27,7 +30,7 @@ export class WhiteboardSessionManagerService {
   }
 
   removeConnection(socketId){
-    console.log("\nWhiteboardSessionManagerService >> removeConnection >> 진입함");
+    //console.log("\nWhiteboardSessionManagerService >> removeConnection >> 진입함");
     let wbConnection = this.checkConnection(socketId);
     if(wbConnection){
       let delIdx = this.websocketConnectionPool.indexOf(wbConnection);
@@ -41,14 +44,14 @@ export class WhiteboardSessionManagerService {
     for(let wbConnection of this.websocketConnectionPool){
       if(wbConnection.socket.id === socketId){
         //이미 연결된 경우임
-        console.log("WhiteboardSessionManagerService >> checkConnection >> Already Connected User");
+        //console.log("WhiteboardSessionManagerService >> checkConnection >> Already Connected User");
         return wbConnection;
       }
     }
     return null
   }
   getConnectedUserList(objectId){
-    //console.log("WhiteboardSessionManagerService >> getConnectedUserList >> namespaceString : ",namespaceString);
+    ////console.log("WhiteboardSessionManagerService >> getConnectedUserList >> namespaceString : ",namespaceString);
     //this.prettyPrintConnectionPool();
     let namespaceString = objectId.toString();
     let userList = new Array<string>();
@@ -69,11 +72,11 @@ export class WhiteboardSessionManagerService {
   }
 
   prettyPrintConnectionPool(){
-    console.log("=====================================================");
+    //console.log("=====================================================");
     for(let connection of this.websocketConnectionPool){
-        console.log("prettyPrintConnectionPool >> connection : ",connection.toString());
+        //console.log("prettyPrintConnectionPool >> connection : ",connection.toString());
     }
-    console.log("=====================================================");
+    //console.log("=====================================================");
   }
 
   /* *************************************************** */
@@ -96,7 +99,7 @@ export class WhiteboardSessionManagerService {
     }
     wbSession.cursorDataArray.push( new CursorData(wsConnection.participantIdToken, newPosition) );
     wbSession.cursorDataVersion++;
-    //console.log("WhiteboardSessionManagerService >> addCursorData >> wbSession : ",wbSession.cursorDataArray);
+    ////console.log("WhiteboardSessionManagerService >> addCursorData >> wbSession : ",wbSession.cursorDataArray);
   }
 
   removeCursorData(wsConnection:WebsocketConnection){

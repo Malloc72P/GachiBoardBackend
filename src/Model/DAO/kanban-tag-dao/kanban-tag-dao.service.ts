@@ -78,13 +78,13 @@ export class KanbanTagDaoService {
           this.findOne(kanbanTagDto._id).then((foundTagDto:KanbanTagDto)=>{
             this.kanbanDataDao.findOne(projectDto.kanbanData._id)
               .then((kanbanDataDto:KanbanDataDto)=>{
-                console.log("KanbanTagDaoService >>  >> kanbanTagDto._id : ",kanbanTagDto._id);
+                //console.log("KanbanTagDaoService >>  >> kanbanTagDto._id : ",kanbanTagDto._id);
                 this.deleteFromArray(kanbanDataDto.kanbanTagListDto, kanbanTagDto._id);
 
                 this.deleteTagFromKanbanItemList(kanbanDataDto.todoGroup, kanbanTagDto._id);
                 this.deleteTagFromKanbanItemList(kanbanDataDto.inProgressGroup, kanbanTagDto._id);
                 this.deleteTagFromKanbanItemList(kanbanDataDto.doneGroup, kanbanTagDto._id);
-                // console.log("KanbanTagDaoService >>  >> kanbanDataDto : ",kanbanDataDto);
+                // //console.log("KanbanTagDaoService >>  >> kanbanDataDto : ",kanbanDataDto);
 
                 this.kanbanDataDao.update(kanbanDataDto._id, kanbanDataDto).then(()=>{
                   let resolveParam = {
@@ -108,9 +108,9 @@ export class KanbanTagDaoService {
     let delIdx = array.length;
     while (delIdx--){
       let tagItem = array[delIdx];
-      // console.log("KanbanTagDaoService >> deleteFromArray >> tagItem : ",tagItem);
+      // //console.log("KanbanTagDaoService >> deleteFromArray >> tagItem : ",tagItem);
       if(tagItem._id.toString() === id){
-        console.log("KanbanTagDaoService >> deleteFromArray >> Splice It");
+        //console.log("KanbanTagDaoService >> deleteFromArray >> Splice It");
         array.splice(delIdx, 1);
       }
     }

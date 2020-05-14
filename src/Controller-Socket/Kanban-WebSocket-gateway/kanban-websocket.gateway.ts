@@ -32,7 +32,7 @@ export class KanbanWebsocketGateway{
 
   @SubscribeMessage(HttpHelper.websocketApi.kanban.create.event)
   onKanbanItemCreate(socket: Socket, packetDto:WebsocketPacketDto) {
-    console.log("KanbanWebsocketGateway >> onKanbanItemCreate >> packetDto : ",packetDto);
+    //console.log("KanbanWebsocketGateway >> onKanbanItemCreate >> packetDto : ",packetDto);
     let kanbanItemDto:KanbanItemDto = packetDto.dataDto as KanbanItemDto;
       this.projectDao.verifyRequest(packetDto.senderIdToken, packetDto.namespaceValue, packetDto.accessToken)
       .then((data)=>{
@@ -41,7 +41,7 @@ export class KanbanWebsocketGateway{
 
         this.kanbanItemDao.create(kanbanItemDto)
           .then((newkanbanItemDto:KanbanItemDto)=>{
-            console.log("KanbanWebsocketGateway >> kanbanItemDao.create >> projectDto.kanbanData._id : ",projectDto.kanbanData._id);
+            //console.log("KanbanWebsocketGateway >> kanbanItemDao.create >> projectDto.kanbanData._id : ",projectDto.kanbanData._id);
             this.kanbanDataDao.findOne(projectDto.kanbanData._id)
               .then((kanbanData:KanbanDataDto)=>{
                 let groupEnum:KanbanGroupEnum = kanbanItemDto.parentGroup;
@@ -63,7 +63,7 @@ export class KanbanWebsocketGateway{
 
                 this.kanbanDataDao.update(kanbanData._id, kanbanData)
                   .then((updateResult)=>{
-                    console.log("KanbanWebsocketGateway >> projectDao >> update >> updateResult : ",updateResult);
+                    //console.log("KanbanWebsocketGateway >> projectDao >> update >> updateResult : ",updateResult);
                     packetDto.accessToken = null;
 
                     packetDto.dataDto["_id"] = newkanbanItemDto._id;
@@ -72,18 +72,20 @@ export class KanbanWebsocketGateway{
                     socket.emit(HttpHelper.websocketApi.kanban.create.event, ackPacket);
                     socket.broadcast.to(projectDto._id.toString()).emit(HttpHelper.websocketApi.kanban.create.event, packetDto);
                   })
-                  .catch((e)=>{console.log("KanbanWebsocketGateway >>  >> e : ",e);});
+                  .catch((e)=>{//console.log("KanbanWebsocketGateway >>  >> e : ",e);
+                  });
 
               })
-              .catch((e)=>{ console.log("KanbanWebsocketGateway >>  >> e : ",e); });
+              .catch((e)=>{ //console.log("KanbanWebsocketGateway >>  >> e : ",e);
+              });
           })
           .catch((e)=>{
-            console.log("KanbanWebsocketGateway >> kanbanItemDao >> create >> e : ",e);
+            //console.log("KanbanWebsocketGateway >> kanbanItemDao >> create >> e : ",e);
           });
 
       })
       .catch((e)=>{
-        console.log("KanbanWebsocketGateway >> verifyRequest >> catch >> e : ",e);
+        //console.log("KanbanWebsocketGateway >> verifyRequest >> catch >> e : ",e);
       })
   }
 
@@ -138,26 +140,26 @@ export class KanbanWebsocketGateway{
                     socket.broadcast.to(projectDto._id.toString()).emit(HttpHelper.websocketApi.kanban.delete.event, packetDto);
                   })
                   .catch((e)=>{
-                    console.log("KanbanWebsocketGateway >> kanbanDataDao.update >> arguments : ",arguments);
+                    //console.log("KanbanWebsocketGateway >> kanbanDataDao.update >> arguments : ",arguments);
                   })
 
               })
               .catch((e)=>{
-                console.log("KanbanWebsocketGateway >> kanbanDataDao.findOne >> e : ",e);
+                //console.log("KanbanWebsocketGateway >> kanbanDataDao.findOne >> e : ",e);
               });
           })
           .catch((e)=>{
-            console.log("KanbanWebsocketGateway >> anbanItemDao.deleteOne >> e : ",e);
+            //console.log("KanbanWebsocketGateway >> anbanItemDao.deleteOne >> e : ",e);
           });
       })
       .catch((e)=>{
-        console.log("KanbanWebsocketGateway >> verifyRequest >> catch >> e : ",e);
+        //console.log("KanbanWebsocketGateway >> verifyRequest >> catch >> e : ",e);
       })
   }
 
   @SubscribeMessage(HttpHelper.websocketApi.kanban.read.event)
   onKanbanItemRead(socket: Socket, packetDto:WebsocketPacketDto){
-    console.log("KanbanWebsocketGateway >> onKanbanItemRead >> packetDto : ",packetDto);
+    //console.log("KanbanWebsocketGateway >> onKanbanItemRead >> packetDto : ",packetDto);
     this.projectDao.verifyRequest(packetDto.senderIdToken, packetDto.namespaceValue, packetDto.accessToken)
       .then((data)=>{
         let userDto = data.userDto;
@@ -171,10 +173,12 @@ export class KanbanWebsocketGateway{
             ackPacket.dataDto = kanbanData;
             socket.emit(HttpHelper.websocketApi.kanban.read.event, ackPacket);
           })
-          .catch((e)=>{console.log("KanbanWebsocketGateway >> kanbanDataDao.findOne >> e : ",e);})
+          .catch((e)=>{
+            //console.log("KanbanWebsocketGateway >> kanbanDataDao.findOne >> e : ",e);
+          })
       })
       .catch((e)=>{
-        console.log("KanbanWebsocketGateway >> verifyRequest >> catch >> e : ",e);
+        //console.log("KanbanWebsocketGateway >> verifyRequest >> catch >> e : ",e);
       })
 
   }
@@ -182,7 +186,7 @@ export class KanbanWebsocketGateway{
   @SubscribeMessage(HttpHelper.websocketApi.kanban.lock.event)
   onKanbanItemLock(socket: Socket, packetDto:WebsocketPacketDto) {
     let kanbanItemDto:KanbanItemDto = packetDto.dataDto as KanbanItemDto;
-    console.log("KanbanWebsocketGateway >> onKanbanItemLock >> 진입함");
+    //console.log("KanbanWebsocketGateway >> onKanbanItemLock >> 진입함");
     this.kanbanItemDao.lockKanban(packetDto).then((data)=>{
       let userDto = data.userDto;
       let projectDto = data.projectDto;
@@ -202,7 +206,7 @@ export class KanbanWebsocketGateway{
 
   @SubscribeMessage(HttpHelper.websocketApi.kanban.unlock.event)
   onKanbanItemUnlock(socket: Socket, packetDto:WebsocketPacketDto) {
-    console.log("KanbanWebsocketGateway >> onKanbanItemUnlock >> 진입함");
+    //console.log("KanbanWebsocketGateway >> onKanbanItemUnlock >> 진입함");
     let kanbanItemDto:KanbanItemDto = packetDto.dataDto as KanbanItemDto;
     this.kanbanItemDao.unlockKanban(packetDto).then((data)=>{
       let userDto = data.userDto;
@@ -224,7 +228,7 @@ export class KanbanWebsocketGateway{
   @SubscribeMessage(HttpHelper.websocketApi.kanban.relocate.event)
   onKanbanItemRelocate(socket: Socket, packetDto:WebsocketPacketDto) {
     let kanbanItemDto:KanbanItemDto = packetDto.dataDto as KanbanItemDto;
-    console.log("KanbanWebsocketGateway >> onKanbanItemRelocate >> kanbanItemDto : ",kanbanItemDto);
+    //console.log("KanbanWebsocketGateway >> onKanbanItemRelocate >> kanbanItemDto : ",kanbanItemDto);
     if(!kanbanItemDto.parentGroup){
       this.kanbanItemDao.unlockKanban(packetDto).then((resolveParam)=>{
           let userDto         = resolveParam.userDto;
@@ -282,7 +286,7 @@ export class KanbanWebsocketGateway{
 
       })
       .catch((e)=>{
-        console.log("KanbanWebsocketGateway >> updateKanbanItem >> e : ",e);
+        //console.log("KanbanWebsocketGateway >> updateKanbanItem >> e : ",e);
       });
   }
 
@@ -305,7 +309,7 @@ export class KanbanWebsocketGateway{
         socket.broadcast.to(packetDto.namespaceValue.toString()).emit(HttpHelper.websocketApi.kanban.create_tag.event, packetDto);
       })
       .catch((e)=>{
-        console.log("KanbanWebsocketGateway >>  >> e : ",e);
+        //console.log("KanbanWebsocketGateway >>  >> e : ",e);
       });
   }
   @SubscribeMessage(HttpHelper.websocketApi.kanban.delete_tag.event)
@@ -324,7 +328,7 @@ export class KanbanWebsocketGateway{
         socket.broadcast.to(packetDto.namespaceValue.toString()).emit(HttpHelper.websocketApi.kanban.delete_tag.event, packetDto);
       })
       .catch((e)=>{
-        console.log("KanbanWebsocketGateway >>  >> e : ",e);
+        //console.log("KanbanWebsocketGateway >>  >> e : ",e);
       });
   }
 
