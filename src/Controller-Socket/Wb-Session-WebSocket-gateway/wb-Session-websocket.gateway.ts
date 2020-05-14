@@ -26,8 +26,8 @@ export class WbSessionWebsocketGateway implements OnGatewayDisconnect{
     ){ }
 
   handleDisconnect(client: Socket) {
-    console.log("ProjectWebsocketGateway >> handleDisconnect >> 진입함");
-    console.log("ProjectWebsocketGateway >> handleDisconnect >> client : ",client.id);
+    //console.log("ProjectWebsocketGateway >> handleDisconnect >> 진입함");
+    //console.log("ProjectWebsocketGateway >> handleDisconnect >> client : ",client.id);
     let removedConnection:WebsocketConnection = this.whiteboardSessionManagerService.removeConnection(client.id);
     let disconnectedUserIdToken = null;
     if (removedConnection) {
@@ -46,7 +46,7 @@ export class WbSessionWebsocketGateway implements OnGatewayDisconnect{
             foundWbSession.connectedUsers.splice(delIdx, 1);
             this.whiteboardSessionDao.update(foundWbSession._id, foundWbSession)
               .then(() => {
-                console.log("WbSessionWebsocketGateway >> handleDisconnect >> USER DISCONNECT COMPLETE");
+                //console.log("WbSessionWebsocketGateway >> handleDisconnect >> USER DISCONNECT COMPLETE");
 
                 if (disconnectedUserIdToken) {
                   let normalPacket = WebsocketPacketDto.createNormalPacket(foundWbSession._id.toString(), WebsocketPacketActionEnum.DISCONNECT);
@@ -57,7 +57,7 @@ export class WbSessionWebsocketGateway implements OnGatewayDisconnect{
 
                   if (wbSessionInstance) {
                     this.whiteboardSessionManagerService.removeCursorData(removedConnection);
-                    console.log("WbSessionWebsocketGateway >> handleDisconnect >> wbSessionInstance : ",wbSessionInstance);
+                    //console.log("WbSessionWebsocketGateway >> handleDisconnect >> wbSessionInstance : ",wbSessionInstance);
                     this.server.to(wbSessionInstance.projectNsp).emit(
                       HttpHelper.websocketApi.whiteboardSession.disconnect.event,
                       normalPacket
@@ -78,7 +78,7 @@ export class WbSessionWebsocketGateway implements OnGatewayDisconnect{
   @SubscribeMessage(HttpHelper.websocketApi.whiteboardSession.create.event)
   onWbSessionCreateRequest(socket: Socket, packetDto:WebsocketPacketDto) {
     let wbSessionDto:WhiteboardSessionDto = packetDto.dataDto as WhiteboardSessionDto;
-    console.log("WbSessionWebsocketGateway >> onWbSessionCreateRequest >> wbSessionDto : ",wbSessionDto);
+    //console.log("WbSessionWebsocketGateway >> onWbSessionCreateRequest >> wbSessionDto : ",wbSessionDto);
 
     this.whiteboardSessionDao.createWbSession(packetDto)
       .then((resolveParam)=>{
@@ -99,7 +99,7 @@ export class WbSessionWebsocketGateway implements OnGatewayDisconnect{
   @SubscribeMessage(HttpHelper.websocketApi.whiteboardSession.read.event)
   onWbSessionGetRequest(socket: Socket, packetDto:WebsocketPacketDto) {
     let wbSessionDto:WhiteboardSessionDto = packetDto.dataDto as WhiteboardSessionDto;
-    console.log("WbSessionWebsocketGateway >> onWbSessionCreateRequest >> wbSessionDto : ",wbSessionDto);
+    //console.log("WbSessionWebsocketGateway >> onWbSessionCreateRequest >> wbSessionDto : ",wbSessionDto);
 
     this.whiteboardSessionDao.getWbSessionListByProjectId(packetDto)
       .then((resolveParam)=>{
@@ -137,7 +137,7 @@ export class WbSessionWebsocketGateway implements OnGatewayDisconnect{
           packetDto.dataDto = foundWbSessionDto;
           packetDto.additionalData = userDto.idToken;
           packetDto.namespaceValue = foundWbSessionDto._id;
-          console.log("WbSessionWebsocketGateway >> onWbSessionJoinRequest >> packetDto : ",packetDto);
+          //console.log("WbSessionWebsocketGateway >> onWbSessionJoinRequest >> packetDto : ",packetDto);
           WbSessionWebsocketGateway.responseAckPacket( socket, HttpHelper.websocketApi.whiteboardSession.join, projectDto, packetDto);
         });
       }).catch((e)=>{
@@ -149,7 +149,7 @@ export class WbSessionWebsocketGateway implements OnGatewayDisconnect{
   @SubscribeMessage(HttpHelper.websocketApi.whiteboardSession.update.event)
   onWbSessionUpdate(socket: Socket, packetDto:WebsocketPacketDto) {
     let wbSessionDto:WhiteboardSessionDto = packetDto.dataDto as WhiteboardSessionDto;
-    console.log("WbSessionWebsocketGateway >> onWbSessionUpdate >> wbSessionDto : ",wbSessionDto);
+    //console.log("WbSessionWebsocketGateway >> onWbSessionUpdate >> wbSessionDto : ",wbSessionDto);
     this.whiteboardSessionDao.updateWbSession(packetDto)
       .then((resolveParam)=>{
         let userDto = resolveParam.userDto;
@@ -163,7 +163,7 @@ export class WbSessionWebsocketGateway implements OnGatewayDisconnect{
   @SubscribeMessage(HttpHelper.websocketApi.whiteboardSession.delete.event)
   onWbSessionDelete(socket: Socket, packetDto:WebsocketPacketDto) {
     let wbSessionDto:WhiteboardSessionDto = packetDto.dataDto as WhiteboardSessionDto;
-    console.log("WbSessionWebsocketGateway >> onWbSessionDelete >> wbSessionDto : ",wbSessionDto);
+    //console.log("WbSessionWebsocketGateway >> onWbSessionDelete >> wbSessionDto : ",wbSessionDto);
     this.whiteboardSessionDao.deleteWbSession(packetDto)
       .then((resolveParam)=>{
         let userDto = resolveParam.userDto;

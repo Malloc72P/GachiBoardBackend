@@ -27,11 +27,11 @@ export class ProjectWebsocketGateway implements OnGatewayInit, OnGatewayConnecti
   @WebSocketServer() server: Server;
 
   handleConnection(client: Socket){
-    console.log("ProjectWebsocketGateway >> handleConnection >> client : ",client.id);
+    //console.log("ProjectWebsocketGateway >> handleConnection >> client : ",client.id);
   }
   handleDisconnect(client) {
-    console.log("ProjectWebsocketGateway >> handleDisconnect >> 진입함");
-    console.log("ProjectWebsocketGateway >> handleDisconnect >> client : ",client.id);
+    //console.log("ProjectWebsocketGateway >> handleDisconnect >> 진입함");
+    //console.log("ProjectWebsocketGateway >> handleDisconnect >> client : ",client.id);
     this.projectSessionManagerService.removeConnection(client.id);
   }
 
@@ -111,7 +111,7 @@ export class ProjectWebsocketGateway implements OnGatewayInit, OnGatewayConnecti
   }
 
   onJoinProjectErrorHandler(rejection:WebsocketValidationCheck, socket, wsRequest:WebSocketRequest, projectId, data?){
-    console.log("ProjectWebsocketGateway >> onJoinProjectErrorHandler >> rejection : ",WebsocketValidationCheck[rejection]);
+    //console.log("ProjectWebsocketGateway >> onJoinProjectErrorHandler >> rejection : ",WebsocketValidationCheck[rejection]);
     let nakPacket = WebsocketPacketDto.createNakPacket(0, projectId);
     nakPacket.dataDto = rejection;
     switch (rejection) {
@@ -124,7 +124,7 @@ export class ProjectWebsocketGateway implements OnGatewayInit, OnGatewayConnecti
       case WebsocketValidationCheck.KICKED_PARTICIPANT:
         break;
     }
-    console.log("ProjectWebsocketGateway >> onJoinProjectErrorHandler >> nakPacket : ",nakPacket);
+    //console.log("ProjectWebsocketGateway >> onJoinProjectErrorHandler >> nakPacket : ",nakPacket);
     socket.emit(wsRequest.event, nakPacket);
   }
 

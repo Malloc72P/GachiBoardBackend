@@ -38,7 +38,7 @@ export class AuthCallbackController {
   googleLoginCallback(@Req() req, @Res() res)
   {
     // handles the Google OAuth2 callback
-    console.log("AuthCallbackController > googleLoginCallback > 호출됨");
+    //console.log("AuthCallbackController > googleLoginCallback > 호출됨");
     let usersDto:UserDto = req.user.usersDto;
     this.userDao.loginProcess(usersDto).then((resolveParam)=>{
       this.redirectWithAccessToken(res, usersDto);
@@ -51,7 +51,7 @@ export class AuthCallbackController {
   kakaoLoginCallback(@Req() req, @Res() res)
   {
     // handles the Google OAuth2 callback
-    console.log("AuthCallbackController >> kakaoLoginCallback >> 진입함");
+    //console.log("AuthCallbackController >> kakaoLoginCallback >> 진입함");
     let usersDto:UserDto = req.user.usersDto;
 
     this.userDao.loginProcess(usersDto).then((resolveParam)=>{
@@ -65,7 +65,7 @@ export class AuthCallbackController {
   naverLoginCallback(@Req() req, @Res() res)
   {
     // handles the Google OAuth2 callback
-    console.log("AuthCallbackController >> naverLoginCallback >> 진입함");
+    //console.log("AuthCallbackController >> naverLoginCallback >> 진입함");
     let usersDto:UserDto = req.user.usersDto;
 
     this.userDao.loginProcess(usersDto).then((resolveParam)=>{
@@ -94,7 +94,7 @@ export class AuthCallbackController {
     let thirdPartId = req.user;
     this.userDao.findOne(thirdPartId)
       .then((userDto)=>{
-        //console.log("AuthCallbackController >>  >> user : ",userDto);
+        ////console.log("AuthCallbackController >>  >> user : ",userDto);
         if(userDto){
           res.status(HttpStatus.CREATED).send({userDto});
         }
@@ -111,7 +111,7 @@ export class AuthCallbackController {
   {
     let usersDto:UserDto = req.user.usersDto;
 
-    //console.log("AuthCallbackController >> signOut >> usersDto.userName : ",usersDto.userName);
+    ////console.log("AuthCallbackController >> signOut >> usersDto.userName : ",usersDto.userName);
     return "success";
   }
 

@@ -49,7 +49,7 @@ export class GoogleStrategyService extends PassportStrategy(Strategy, 'google')
       done(null, user);
     }//가장 밖의 try문
     catch(err){
-      // console.log(err)
+      // //console.log(err)
       done(err, false);
     }//가장 밖의 catch문
   }//validate

@@ -6,6 +6,7 @@ import { UserDto } from '../../DTO/UserDto/user-dto';
 import { ProjectDto } from '../../DTO/ProjectDto/project-dto';
 import { UserDaoService } from '../user-dao/user-dao.service';
 import { KanbanDataDaoService } from '../kanban-data-dao/kanban-data-dao.service';
+import { KanbanDataDto } from '../../DTO/KanbanDataDto/kanban-data-dto';
 
 @Injectable()
 export class ProjectDaoService {
@@ -90,9 +91,4 @@ export class ProjectDaoService {
       })//then
     });
   }
-
-
-
-
-
 }

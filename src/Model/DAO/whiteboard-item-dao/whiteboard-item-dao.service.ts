@@ -105,7 +105,7 @@ export class WhiteboardItemDaoService {
 
 
           }).catch((e)=>{
-            // console.log("WhiteboardItemDaoService >> saveMultipleWbItem >> e : ",e);
+            // //console.log("WhiteboardItemDaoService >> saveMultipleWbItem >> e : ",e);
             reject(new RejectionEvent(RejectionEventEnum.UPDATE_FAILED, e))
           });
 
@@ -143,7 +143,7 @@ export class WhiteboardItemDaoService {
       if(wbItemDto.type === WhiteboardItemType.EDITABLE_LINK){
         let edtLink:EditableLinkDto = wbItemDto as EditableLinkDto;
         if(!edtLink.fromLinkPort || !edtLink.toLinkPort){
-          // console.log("WhiteboardItemDaoService >> saveMultipleDocument >> trap");
+          // //console.log("WhiteboardItemDaoService >> saveMultipleDocument >> trap");
         }
         if(edtLink.fromLinkPort){
           edtLink.fromLinkPort.ownerWbItemId = idMap.get(edtLink.fromLinkPort.ownerWbItemId);
@@ -237,7 +237,7 @@ export class WhiteboardItemDaoService {
               }
 
               foundWbItem.wbItemDto = wbItemDto;
-              // console.log("WhiteboardItemDaoService >> updateMultipleWbItem >> foundWbItem : ",foundWbItem);
+              // //console.log("WhiteboardItemDaoService >> updateMultipleWbItem >> foundWbItem : ",foundWbItem);
               await this.wbItemPacketModel.updateOne({ _id: foundWbItem._id }, foundWbItem).exec();
               updateList.push(foundWbItem);
             }
@@ -329,7 +329,7 @@ export class WhiteboardItemDaoService {
         await this.wbItemPacketModel.updateOne({_id : wbItempacket._id}, wbItempacket).exec();
       }
     } catch (e) {
-      // console.log("WhiteboardItemDaoService >> updateWbItemPacketList >> e : ",e);
+      // //console.log("WhiteboardItemDaoService >> updateWbItemPacketList >> e : ",e);
     }
   }
 
