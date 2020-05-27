@@ -262,6 +262,17 @@ export class HttpHelper {
       producerClose: new WebSocketRequest(
         "videoChat_ProducerClose", WebSocketTypeEnum.DELETE
       ),
+    },
+    textChat: {
+      sendMessage: new WebSocketRequest(
+        "textChat_SendMessage", WebSocketTypeEnum.UPDATE
+      ),
+      receiveMessage: new WebSocketRequest(
+        "textChat_receiveMessage", WebSocketTypeEnum.UPDATE
+      ),
+      loadMessages: new WebSocketRequest(
+        "textChat_loadMessages", WebSocketTypeEnum.READ
+      )
     }
   };
 

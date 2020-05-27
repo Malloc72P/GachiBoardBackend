@@ -6,12 +6,19 @@ import { WebsocketPacketDto } from '../../Model/DTO/WebsocketPacketDto/Websocket
 import { MediaKind, RtpCapabilities } from 'mediasoup/lib/RtpParameters';
 import { DtlsParameters, WebRtcTransport } from 'mediasoup/lib/WebRtcTransport';
 import { Consumer } from 'mediasoup/lib/Consumer';
+import { ChatMessageDto } from '../../Model/DTO/ChatMessageDto/chat-message-dto';
+import { ChatMessageDaoService } from '../../Model/DAO/chat-message-dao/chat-message-dao.service';
 
 @WebSocketGateway()
-export class VideoChatWebsocketGateway {
+export class ChattingWebsocketGateway {
   constructor(
     private videoChatManager: VideoChatManagerService,
+    private chatMessageDao: ChatMessageDaoService,
   ) { }
+
+//  ##############################################
+//  ############## Video Chat Start ##############
+//  ##############################################
 
   @SubscribeMessage(HttpHelper.websocketApi.videoChat.getRouterRtpCapabilities.event)
   public async getRouterRtpCapabilities(socket: Socket, socketDto: WebsocketPacketDto) {
@@ -37,7 +44,7 @@ export class VideoChatWebsocketGateway {
       socket.emit(HttpHelper.websocketApi.videoChat.join.event, ackPacket);
       socket.broadcast.to(socketDto.namespaceValue).emit(HttpHelper.websocketApi.videoChat.join.event, socketDto);
     } catch (e) {
-      console.error("VideoChatWebsocketGateway >> onJoinVideoChatRoom >> Room join failed : ", e);
+      console.error("ChattingWebsocketGateway >> onJoinVideoChatRoom >> Room join failed : ", e);
       socket.emit(
         HttpHelper.websocketApi.videoChat.join.event,
         WebsocketPacketDto.createNakPacket(socketDto.wsPacketSeq, socketDto.namespaceValue));
@@ -179,5 +186,41 @@ export class VideoChatWebsocketGateway {
     };
 
     socket.emit(HttpHelper.websocketApi.videoChat.consume.event, ackPacket);
+  }
+
+//  ##############################################
+//  ############## Text Chat Start ###############
+//  ##############################################
+
+  @SubscribeMessage(HttpHelper.websocketApi.textChat.sendMessage.event)
+  public async sendMessage(socket: Socket, chatMessageDto: ChatMessageDto) {
+    try {
+      console.log("ChattingWebsocketGateway >> sendMessage >> chatMessageDto : ", chatMessageDto);
+
+      // DB 전송
+      this.chatMessageDao.saveMessage(chatMessageDto).then((dto: ChatMessageDto) => {
+        // DB 성공시 확인 메시지 전송 (verify = true)
+        dto.verify = true;
+        socket.emit(HttpHelper.websocketApi.textChat.sendMessage.event, dto);
+
+        // 다른 유저들에게 전송
+        socket.broadcast.to(chatMessageDto.projectId).emit(HttpHelper.websocketApi.textChat.receiveMessage.event, chatMessageDto);
+      }).catch((dto: ChatMessageDto) => {
+        // DB 실패시 확인 메시지 전송 (verify = false)
+        dto.verify = false;
+        socket.emit(HttpHelper.websocketApi.textChat.sendMessage.event, dto);
+      });
+    } catch (e) {
+      console.error(e.message, e.stack);
+    }
+  }
+
+  @SubscribeMessage(HttpHelper.websocketApi.textChat.loadMessages.event)
+  public async loadMessages(socket: Socket, receivedData :{ projectId: string, start: number }) {
+    try {
+      const data = await this.chatMessageDao.loadMessages(receivedData.projectId, receivedData.start);
+    } catch (e) {
+      console.error(e.message, e.stack);
+    }
   }
 }
