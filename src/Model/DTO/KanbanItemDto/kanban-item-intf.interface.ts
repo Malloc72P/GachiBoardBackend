@@ -7,4 +7,7 @@ export interface KanbanItemDtoIntf extends Document{
   color     : string;
   lockedBy  : string;
   tagIdList : Array<any>;
+  isTimerStarted;
+  timerStartDate:Date;
+  timerEndDate:Date;
 }

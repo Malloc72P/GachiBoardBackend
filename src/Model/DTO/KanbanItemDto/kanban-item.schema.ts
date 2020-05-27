@@ -7,4 +7,7 @@ export const KanbanItemSchema = new mongoose.Schema({
   tagIdList   : [{ type: mongoose.Schema.Types.ObjectId, ref: "KANBAN_TAG_MODEL" }],
   parentGroup : { type: String, required: true },
   lockedBy    : { type: String },
+  isTimerStarted  : {type: Boolean},
+  timerStartDate  : {type: Date},
+  timerEndDate    : {type: Date},
 });
