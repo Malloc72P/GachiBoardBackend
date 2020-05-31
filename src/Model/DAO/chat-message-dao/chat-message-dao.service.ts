@@ -25,7 +25,7 @@ export class ChatMessageDaoService {
   public loadMessages(projectId: string, start: number): Promise<any> {
     return new Promise<any>(((resolve, reject) => {
       this.findMessages(projectId, start, this.loadAmount).then((data) => {
-        console.log("ChatMessageDaoService >>  >> data : ", data);
+        resolve(data);
       }).catch((err) => {
         reject(err.toString());
       })
@@ -39,6 +39,6 @@ export class ChatMessageDaoService {
   }
 
   private async findMessages(projectId: string, start: number, amount: number): Promise<any> {
-    return await this.chatMessageModel.find({ projectId: projectId }).exec();
+    return await this.chatMessageModel.find({ projectId: projectId }).populate("projectId").exec();
   }
 }

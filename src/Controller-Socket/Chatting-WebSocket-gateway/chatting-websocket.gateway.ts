@@ -219,6 +219,8 @@ export class ChattingWebsocketGateway {
   public async loadMessages(socket: Socket, receivedData :{ projectId: string, start: number }) {
     try {
       const data = await this.chatMessageDao.loadMessages(receivedData.projectId, receivedData.start);
+      const parsedData = ChatMessageDto.parseData(data);
+      socket.emit(HttpHelper.websocketApi.textChat.loadMessages.event, parsedData);
     } catch (e) {
       console.error(e.message, e.stack);
     }
