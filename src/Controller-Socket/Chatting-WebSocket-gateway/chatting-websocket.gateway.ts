@@ -216,9 +216,9 @@ export class ChattingWebsocketGateway {
   }
 
   @SubscribeMessage(HttpHelper.websocketApi.textChat.loadMessages.event)
-  public async loadMessages(socket: Socket, receivedData :{ projectId: string, start: number }) {
+  public async loadMessages(socket: Socket, receivedData :{ projectId: string, loadAt: string }) {
     try {
-      const data = await this.chatMessageDao.loadMessages(receivedData.projectId, receivedData.start);
+      const data = await this.chatMessageDao.loadMessages(receivedData.projectId, receivedData.loadAt);
       const parsedData = ChatMessageDto.parseData(data);
       socket.emit(HttpHelper.websocketApi.textChat.loadMessages.event, parsedData);
     } catch (e) {
