@@ -34,6 +34,9 @@ import { KakaoStrategyService } from './Model/SocialLogin/kakao-strategy/kakao-s
 import { NaverStrategyService } from './Model/SocialLogin/naver-strategy/naver-strategy.service';
 import { VideoChatWebsocketGateway } from './Controller-Socket/Video-Chat-WebSocket-gateway/video-chat-websocket.gateway';
 import { VideoChatManagerService } from './Model/VideoChatManager/video-chat-manager/video-chat-manager.service';
+import { MulterModule } from '@nestjs/platform-express';
+import { CloudStorageController } from './Controller/cloud-storage/cloud-storage.controller';
+import { FileDaoService } from './Model/DAO/file-dao/file-dao.service';
 
 @Module({
   imports: [
@@ -74,14 +77,20 @@ import { VideoChatManagerService } from './Model/VideoChatManager/video-chat-man
             schema: WbItemPacketSchema
           },
 
-        ])
+        ]),
+    MulterModule.registerAsync({
+      useFactory: () => ({
+        dest: '/upload',
+      })
+    })
   ],
   controllers:
     [
       AppController,
       AuthCallbackController,
       ProjectController,
-      InviteCodeController
+      InviteCodeController,
+      CloudStorageController,
     ],
 
   providers:
@@ -110,6 +119,7 @@ import { VideoChatManagerService } from './Model/VideoChatManager/video-chat-man
       KanbanTagDaoService,
       WhiteboardSessionDaoService,
       WhiteboardItemDaoService,
+      FileDaoService,
       /* **************************************************** */
       /* Data Access Object END */
       /* **************************************************** */
