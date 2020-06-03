@@ -15,7 +15,7 @@ export class ChatMessageDto {
       const messageDto = new ChatMessageDto();
 
       messageDto._id = value.id;
-      messageDto.sentDate = value.sentDate.toString();
+      messageDto.sentDate = value.sentDate.toISOString();
       messageDto.projectId = value.projectId.id;
       messageDto.userId = value.userId;
       messageDto.content = value.content;

@@ -8,13 +8,21 @@ import { DtlsParameters, WebRtcTransport } from 'mediasoup/lib/WebRtcTransport';
 import { Consumer } from 'mediasoup/lib/Consumer';
 import { ChatMessageDto } from '../../Model/DTO/ChatMessageDto/chat-message-dto';
 import { ChatMessageDaoService } from '../../Model/DAO/chat-message-dao/chat-message-dao.service';
+import { ProjectDaoService } from '../../Model/DAO/project-dao/project-dao.service';
+import { UserDto } from '../../Model/DTO/UserDto/user-dto';
+import { ProjectDto } from '../../Model/DTO/ProjectDto/project-dto';
+import { ProjectSessionManagerService } from '../../Model/SessionManager/Session-Manager-Project/project-session-manager.service';
+import { WebsocketConnection } from '../../Model/SessionManager/Websocket-Connection/Websocket-Connection';
 
 @WebSocketGateway()
 export class ChattingWebsocketGateway {
   constructor(
     private videoChatManager: VideoChatManagerService,
     private chatMessageDao: ChatMessageDaoService,
-  ) { }
+    private projectDao: ProjectDaoService,
+    private projectSessionManager: ProjectSessionManagerService,
+  ) {
+  }
 
 //  ##############################################
 //  ############## Video Chat Start ##############
@@ -44,7 +52,7 @@ export class ChattingWebsocketGateway {
       socket.emit(HttpHelper.websocketApi.videoChat.join.event, ackPacket);
       socket.broadcast.to(socketDto.namespaceValue).emit(HttpHelper.websocketApi.videoChat.join.event, socketDto);
     } catch (e) {
-      console.error("ChattingWebsocketGateway >> onJoinVideoChatRoom >> Room join failed : ", e);
+      console.error('ChattingWebsocketGateway >> onJoinVideoChatRoom >> Room join failed : ', e);
       socket.emit(
         HttpHelper.websocketApi.videoChat.join.event,
         WebsocketPacketDto.createNakPacket(socketDto.wsPacketSeq, socketDto.namespaceValue));
@@ -93,7 +101,7 @@ export class ChattingWebsocketGateway {
           break;
       }
 
-      if(!transport) {
+      if (!transport) {
         console.error(`Couldn't find ${data.type} transport with roomId - ${socketDto.senderIdToken}, userId - ${socketDto.senderIdToken}`);
       }
 
@@ -118,7 +126,7 @@ export class ChattingWebsocketGateway {
       switch (kind) {
         case 'audio':
           for (let [key, user] of userList) {
-            if(key === socketDto.senderIdToken) continue;
+            if (key === socketDto.senderIdToken) continue;
             if (!!user.producerAudio && !user.producerAudio.closed) {
               producerIdArray.push(key);
             }
@@ -126,7 +134,7 @@ export class ChattingWebsocketGateway {
           break;
         case 'video':
           for (let [key, user] of userList) {
-            if(key === socketDto.senderIdToken) continue;
+            if (key === socketDto.senderIdToken) continue;
             if (!!user.producerVideo && !user.producerVideo.closed) {
               producerIdArray.push(key);
             }
@@ -195,7 +203,7 @@ export class ChattingWebsocketGateway {
   @SubscribeMessage(HttpHelper.websocketApi.textChat.sendMessage.event)
   public async sendMessage(socket: Socket, chatMessageDto: ChatMessageDto) {
     try {
-      console.log("ChattingWebsocketGateway >> sendMessage >> chatMessageDto : ", chatMessageDto);
+      console.log('ChattingWebsocketGateway >> sendMessage >> chatMessageDto : ', chatMessageDto);
 
       // DB 전송
       this.chatMessageDao.saveMessage(chatMessageDto).then((dto: ChatMessageDto) => {
@@ -216,11 +224,36 @@ export class ChattingWebsocketGateway {
   }
 
   @SubscribeMessage(HttpHelper.websocketApi.textChat.loadMessages.event)
-  public async loadMessages(socket: Socket, receivedData :{ projectId: string, loadAt: string }) {
+  public async loadMessages(socket: Socket, receivedData: { projectId: string, loadAt: string }) {
     try {
       const data = await this.chatMessageDao.loadMessages(receivedData.projectId, receivedData.loadAt);
       const parsedData = ChatMessageDto.parseData(data);
       socket.emit(HttpHelper.websocketApi.textChat.loadMessages.event, parsedData);
+    } catch (e) {
+      console.error(e.message, e.stack);
+    }
+  }
+
+  @SubscribeMessage(HttpHelper.websocketApi.textChat.getUnreadCount.event)
+  public async getUnreadCount(socket: Socket, receivedData: { projectId: string, userId: string }) {
+    try {
+      const dto: { userDto: UserDto, projectDto: ProjectDto } = await this.projectDao.verifyRequest(receivedData.userId, receivedData.projectId);
+      const participantDto = this.projectDao.getParticipantByUserDto(dto.projectDto, dto.userDto);
+      let date;
+      if (!!participantDto) {
+        date = participantDto.lastReadDate;
+        const unReadCount = await this.chatMessageDao.getUnreadCount(receivedData.projectId, date);
+        socket.emit(HttpHelper.websocketApi.textChat.getUnreadCount.event, unReadCount);
+      }
+    } catch (e) {
+      console.error(e.message, e.stack);
+    }
+  }
+
+  @SubscribeMessage(HttpHelper.websocketApi.textChat.updateReadDate.event)
+  public async updateReadDate(socket: Socket, receivedData: { projectId: string, userId: string, date: string }) {
+    try {
+      await this.projectDao.updateLastReadDate(receivedData.projectId, receivedData.userId, new Date(receivedData.date));
     } catch (e) {
       console.error(e.message, e.stack);
     }

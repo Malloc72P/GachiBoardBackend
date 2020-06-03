@@ -10,6 +10,8 @@ export class ParticipantDto {
   public userName   : string;
   public profileImg : string;
   public state      : ParticipantState;
+  public lastReadDate: Date;
+
 
   public static createPriticipantDto(userDto:UserDto){
     let newParticipant = new ParticipantDto();
@@ -20,6 +22,7 @@ export class ParticipantDto {
     newParticipant.profileImg = userDto.profileImg;
     newParticipant.startDate = new Date();
     newParticipant.state = ParticipantState.AVAIL;
+    newParticipant.lastReadDate = new Date();
     return newParticipant;
   }
 }
