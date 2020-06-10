@@ -262,6 +262,14 @@ export class HttpHelper {
       producerClose: new WebSocketRequest(
         "videoChat_ProducerClose", WebSocketTypeEnum.DELETE
       ),
+    },
+    cloudStorage : {
+      updated: new WebSocketRequest(
+        "cloudStorage_updated", WebSocketTypeEnum.UPDATE
+      ),
+      deleted: new WebSocketRequest(
+        "cloudStorage_deleted", WebSocketTypeEnum.UPDATE
+      ),
     }
   };
 

@@ -13,6 +13,7 @@ import { FileMetadataDto, FileTypeEnum } from '../../Model/DTO/FileMetadataDto/f
 import { SocketManagerService } from '../../Model/socket-service/socket-manager.service';
 import { GridFSBucketReadStream } from 'mongodb';
 import { Response } from 'express';
+import { HttpHelper } from '../../Model/Helper/HttpHelper/HttpHelper';
 
 @Controller('cloudStorage')
 export class CloudStorageController {
@@ -130,6 +131,7 @@ export class CloudStorageController {
 
       let tgtDirectory: FileMetadataDto = await this.fileMetadataDaoService.getParentDirectory(path, projectDto);
       res.status(HttpStatus.CREATED).send(tgtDirectory);
+      this.socketManagerService.broadcastMsgToProjectSession(HttpHelper.websocketApi.cloudStorage.updated, projectDto, tgtDirectory, userDto.idToken);
     } catch (e) {
       console.log("CloudStorageController >> uploadFile >> e : ",e);
       res.status(HttpStatus.BAD_REQUEST).send({ msg: e.message });
@@ -161,9 +163,9 @@ export class CloudStorageController {
         throw new Error("bad request");
       }
 
-      res.status(HttpStatus.CREATED).send(
-        await this.fileMetadataDaoService.getParentDirectory(path, projectDto)
-      );
+      let refreshedDirectory = await this.fileMetadataDaoService.getParentDirectory(path, projectDto);
+      res.status(HttpStatus.CREATED).send(refreshedDirectory);
+      this.socketManagerService.broadcastMsgToProjectSession(HttpHelper.websocketApi.cloudStorage.updated, projectDto, refreshedDirectory, userDto.idToken);
     } catch (e) {
       console.log("CloudStorageController >> createFolder >> e : ",e);
       res.status(HttpStatus.BAD_REQUEST).send({ msg: e.message });
@@ -193,9 +195,9 @@ export class CloudStorageController {
       fileMetadataDto.title = newName;
       await this.fileMetadataDaoService.update(fileMetadataDto._id, fileMetadataDto);
 
-      res.status(HttpStatus.CREATED).send(
-        await this.fileMetadataDaoService.getParentDirectory(fileMetadataDto.path, projectDto)
-      );
+      let refreshedDirectory = await this.fileMetadataDaoService.getParentDirectory(fileMetadataDto.path, projectDto);
+      res.status(HttpStatus.CREATED).send(refreshedDirectory);
+      this.socketManagerService.broadcastMsgToProjectSession(HttpHelper.websocketApi.cloudStorage.updated, projectDto, refreshedDirectory, userDto.idToken);
     } catch (e) {
       console.log("CloudStorageController >> renameFile >> e : ",e);
       res.status(HttpStatus.BAD_REQUEST).send({ msg: e.message });
@@ -239,9 +241,9 @@ export class CloudStorageController {
         await this.fileMetadataDaoService.deleteOne(fileMetadataDto._id);
       }
 
-      res.status(HttpStatus.CREATED).send(
-        await this.fileMetadataDaoService.getParentDirectory(fileMetadataDto.path, projectDto)
-      );
+      let refreshedDirectory = await this.fileMetadataDaoService.getParentDirectory(fileMetadataDto.path, projectDto);
+      res.status(HttpStatus.CREATED).send(refreshedDirectory);
+      this.socketManagerService.broadcastMsgToProjectSession(HttpHelper.websocketApi.cloudStorage.deleted, projectDto, fileMetadataDto, userDto.idToken);
     } catch (e) {
       console.log("CloudStorageController >> renameFile >> e : ",e);
       res.status(HttpStatus.BAD_REQUEST).send({ msg: e.message });
