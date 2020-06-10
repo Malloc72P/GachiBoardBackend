@@ -21,9 +21,12 @@ export class FileDaoService {
       .writeFileStream(stream, options);
   }
 
-  async findInfo(id: Types.ObjectId): Promise<any> {
+  async findInfo(id): Promise<any> {
     return await this.fileModel
-      .findById(id.toHexString());
+      .findById(id);
+  }
+  async deleteOne(id): Promise<any>{
+    return await this.fileModel.delete(id);
   }
 
   public async writeFile(

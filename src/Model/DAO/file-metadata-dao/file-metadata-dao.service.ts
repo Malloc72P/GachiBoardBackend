@@ -26,6 +26,10 @@ export class FileMetadataDaoService {
     return await this.fileMetadataModel.findOne({ _id: _id })
       .exec();
   }
+  async findOneByFilePointer(filePointer): Promise<any> {
+    return await this.fileMetadataModel.findOne({ filePointer: filePointer })
+      .exec();
+  }
   async findRootByProjectId(projectId): Promise<any> {
     return await this.fileMetadataModel.findOne({ projectId : projectId, path : null })
       .exec();
@@ -45,6 +49,10 @@ export class FileMetadataDaoService {
   }
   async update(_id, fileMetadataDto:FileMetadataDto): Promise<any> {
     return await this.fileMetadataModel.updateOne({_id : _id}, fileMetadataDto)
+      .exec();
+  }
+  async deleteOne(_id): Promise<any>{
+    return await this.fileMetadataModel.deleteOne({_id : _id})
       .exec();
   }
 
@@ -88,6 +96,44 @@ export class FileMetadataDaoService {
       -1, "System", new Date());
     console.log("FileMetadataDaoService >> initRootDirectory >> newRoot : ",newRoot);
     return await this.create(newRoot);
+  }
+  getFileType(filename, contentType){
+    let tokenizedContentType = contentType.split('/');
+    let tokenizedFileName = filename.split('.');
+    let fileExt = tokenizedFileName[tokenizedFileName.length - 1];
+    let fileTypeEnum:FileTypeEnum;
+    switch (tokenizedContentType[0]) {
+      case "application" :
+        switch (tokenizedContentType[1]) {
+          case "octet-stream" :
+            if (fileExt === "7z" || fileExt === "egg") {
+              fileTypeEnum = FileTypeEnum.COMPRESSED_FILE;
+            } else {
+              fileTypeEnum = FileTypeEnum.ETC;
+            }
+            break;
+          case "x-zip-compressed" :
+            fileTypeEnum = FileTypeEnum.COMPRESSED_FILE;
+            break;
+          default :
+            fileTypeEnum = FileTypeEnum.DOCUMENT;
+            break;
+        }
+        break;
+      case "image" :
+        fileTypeEnum = FileTypeEnum.IMAGE;
+        break;
+      case "video" :
+        fileTypeEnum = FileTypeEnum.VIDEO;
+        break;
+      case "audio" :
+        fileTypeEnum = FileTypeEnum.AUDIO;
+        break;
+      case "text" :
+        fileTypeEnum = FileTypeEnum.DOCUMENT;
+        break;
+    }
+    return fileTypeEnum;
   }
 
 }
