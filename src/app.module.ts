@@ -32,8 +32,10 @@ import { WhiteboardItemDaoService } from './Model/DAO/whiteboard-item-dao/whiteb
 import { WbItemPacketSchema } from './Model/DTO/WebsocketPacketDto/WbItemPacketDto/WbItemPacket.schema';
 import { KakaoStrategyService } from './Model/SocialLogin/kakao-strategy/kakao-strategy.service';
 import { NaverStrategyService } from './Model/SocialLogin/naver-strategy/naver-strategy.service';
-import { VideoChatWebsocketGateway } from './Controller-Socket/Video-Chat-WebSocket-gateway/video-chat-websocket.gateway';
+import { ChattingWebsocketGateway } from './Controller-Socket/Chatting-WebSocket-gateway/chatting-websocket.gateway';
 import { VideoChatManagerService } from './Model/VideoChatManager/video-chat-manager/video-chat-manager.service';
+import { ChatMessageSchema } from './Model/DTO/ChatMessageDto/chat-message-schema';
+import { ChatMessageDaoService } from './Model/DAO/chat-message-dao/chat-message-dao.service';
 
 @Module({
   imports: [
@@ -73,7 +75,10 @@ import { VideoChatManagerService } from './Model/VideoChatManager/video-chat-man
             name: "WHITEBOARD_ITEM_PACKET_MODEL",
             schema: WbItemPacketSchema
           },
-
+          {
+            name: "CHAT_MESSAGE_MODEL",
+            schema: ChatMessageSchema
+          },
         ])
   ],
   controllers:
@@ -110,6 +115,7 @@ import { VideoChatManagerService } from './Model/VideoChatManager/video-chat-man
       KanbanTagDaoService,
       WhiteboardSessionDaoService,
       WhiteboardItemDaoService,
+      ChatMessageDaoService,
       /* **************************************************** */
       /* Data Access Object END */
       /* **************************************************** */
@@ -122,7 +128,7 @@ import { VideoChatManagerService } from './Model/VideoChatManager/video-chat-man
       KanbanWebsocketGateway,
       WbSessionWebsocketGateway,
       WbWebsocketGateway,
-      VideoChatWebsocketGateway,
+      ChattingWebsocketGateway,
       /* **************************************************** */
       /* WebSocket END */
       /* **************************************************** */
