@@ -58,7 +58,6 @@ export class CloudStorageController {
       //4. 권한이 있다면 파일의 읽기스트림을 생성하고, 요청자에게 전송한다.
       let foundFile: GridFSBucketReadStream = await this.fileDaoService.readStream(param.id);
       let fileInfo = await this.fileDaoService.findInfo(param.id);
-      console.log('CloudStorageController >> downloadFile >> fileMetadata : ', fileInfo);
       res.setHeader(
         'Content-Disposition',
         `attachment; filename=${encodeURI(fileInfo.filename)}`,
@@ -67,27 +66,34 @@ export class CloudStorageController {
 
       foundFile.pipe(res);
     } catch (e) {
-      console.log("CloudStorageController >> downloadFile >> e : ",e);
+      console.error("CloudStorageController >> downloadFile >> e : ",e);
       res.status(HttpStatus.BAD_REQUEST).send({ msg: e.message });
     }
   }
   @Get()
   @UseGuards(AuthGuard('jwt'))
-  async getAllMetadata(@Res() res,  @Query() param){
+  async getAllMetadata(@Req() req, @Res() res,  @Query() param){
+    let path = param.path;
     try {
+      let userDto: UserDto = await this.userDao.findOne(req.user);
       let projectDto: ProjectDto = await this.projectDaoService.findOne(param.projectId);
-      console.log('CloudStorageController >> getAllMetadata >> 진입함');
-      let path = param.path;
       if (!path) {
         throw new Error('failed');
       }
+      let rootFolder = await this.fileMetadataDaoService.findRootByProjectId(projectDto._id.toString());
+      if(path === "," && !rootFolder){
+        await this.fileMetadataDaoService.createFolder(
+          projectDto, userDto,"root",null
+        )
+      }
+
       //찾은 폴더의 메타데이터를 가져온다
       let tgtDirectory: FileMetadataDto = await this.fileMetadataDaoService.getParentDirectory(path, projectDto);
-      // let foundFiles =  await this.fileMetadataDaoService.findDescendentByPath(path);
-      console.log('CloudStorageController >> getAllMetadata >> tgtDirectory : ', tgtDirectory);
+
       res.status(HttpStatus.CREATED).send(tgtDirectory);
     } catch (e) {
-      console.log("CloudStorageController >> getAllMetadata >> e : ",e);
+      console.error("CloudStorageController >> getAllMetadata >> e : ",e);
+
       res.status(HttpStatus.BAD_REQUEST).send({ msg: e.message });
     }
   }
@@ -96,7 +102,6 @@ export class CloudStorageController {
   @UseInterceptors(FilesInterceptor('files'))
   async uploadFile(@Res() res, @Req() req, @UploadedFiles() files, @Body() param){
     try {
-      console.log('CloudStorageController >> uploadFile >> files : ', files);
       let userDto: UserDto = await this.userDao.findOne(req.user);
       let projectDto: ProjectDto = await this.projectDaoService.findOne(param.projectId);
 
@@ -108,11 +113,9 @@ export class CloudStorageController {
       if (!userDto || !projectDto) {
         throw new Error('file upload failed');
       }
-      console.log('CloudStorageController >> uploadFile >> path : ', path);
       for (let file of files) {
         //GridFS를 써서 파일 저장
         const createdFile = await this.fileDaoService.writeFile(file, file.metadata);
-        console.log('CloudStorageController >> uploadFile >> createdFile : ', createdFile);
 
         //파일 메타데이터 저장
         let createdMetadata: FileMetadataDto = await this.fileMetadataDaoService.create(
@@ -126,14 +129,13 @@ export class CloudStorageController {
             userDto.userName,
             new Date(),
             createdFile._id));
-        console.log('CloudStorageController >> uploadFile >> createdMetadata : ', createdMetadata);
       }
 
       let tgtDirectory: FileMetadataDto = await this.fileMetadataDaoService.getParentDirectory(path, projectDto);
       res.status(HttpStatus.CREATED).send(tgtDirectory);
       this.socketManagerService.broadcastMsgToProjectSession(HttpHelper.websocketApi.cloudStorage.updated, projectDto, tgtDirectory, userDto.idToken);
     } catch (e) {
-      console.log("CloudStorageController >> uploadFile >> e : ",e);
+      console.error("CloudStorageController >> uploadFile >> e : ",e);
       res.status(HttpStatus.BAD_REQUEST).send({ msg: e.message });
     }
   }
@@ -141,7 +143,6 @@ export class CloudStorageController {
   @UseGuards(AuthGuard('jwt'))
   async createFolder(@Req() req, @Body() param, @Res() res ){
     try {
-      console.log('CloudStorageController >> createFolder >> 진입함');
 
       let userDto: UserDto = await this.userDao.findOne(req.user);
       let projectDto: ProjectDto = await this.projectDaoService.findOne(param.projectId);
@@ -167,7 +168,7 @@ export class CloudStorageController {
       res.status(HttpStatus.CREATED).send(refreshedDirectory);
       this.socketManagerService.broadcastMsgToProjectSession(HttpHelper.websocketApi.cloudStorage.updated, projectDto, refreshedDirectory, userDto.idToken);
     } catch (e) {
-      console.log("CloudStorageController >> createFolder >> e : ",e);
+      console.error("CloudStorageController >> createFolder >> e : ",e);
       res.status(HttpStatus.BAD_REQUEST).send({ msg: e.message });
     }
   }
@@ -175,8 +176,6 @@ export class CloudStorageController {
   @UseGuards(AuthGuard('jwt'))
   async renameFile(@Req() req, @Body() param, @Res() res ){
     try {
-      console.log('CloudStorageController >> renameFile >> 진입함');
-
       let userDto: UserDto = await this.userDao.findOne(req.user);
       let projectDto: ProjectDto = await this.projectDaoService.findOne(param.projectId);
       let newName = param.newName;
@@ -199,7 +198,7 @@ export class CloudStorageController {
       res.status(HttpStatus.CREATED).send(refreshedDirectory);
       this.socketManagerService.broadcastMsgToProjectSession(HttpHelper.websocketApi.cloudStorage.updated, projectDto, refreshedDirectory, userDto.idToken);
     } catch (e) {
-      console.log("CloudStorageController >> renameFile >> e : ",e);
+      console.error("CloudStorageController >> renameFile >> e : ",e);
       res.status(HttpStatus.BAD_REQUEST).send({ msg: e.message });
     }
   }
@@ -207,8 +206,6 @@ export class CloudStorageController {
   @UseGuards(AuthGuard('jwt'))
   async deleteFile(@Req() req, @Body() param, @Res() res ){
     try {
-      console.log('CloudStorageController >> deleteFile >> 진입함');
-
       let userDto: UserDto = await this.userDao.findOne(req.user);
       let projectDto: ProjectDto = await this.projectDaoService.findOne(param.projectId);
       let fileMetadataId = param.fileMetadataId;
@@ -245,7 +242,7 @@ export class CloudStorageController {
       res.status(HttpStatus.CREATED).send(refreshedDirectory);
       this.socketManagerService.broadcastMsgToProjectSession(HttpHelper.websocketApi.cloudStorage.deleted, projectDto, fileMetadataDto, userDto.idToken);
     } catch (e) {
-      console.log("CloudStorageController >> renameFile >> e : ",e);
+      console.error("CloudStorageController >> renameFile >> e : ",e);
       res.status(HttpStatus.BAD_REQUEST).send({ msg: e.message });
     }
   }
