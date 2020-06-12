@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
 
-export interface KanbanItemDtoIntf extends Document{
+export interface KanbanItemDtoIntf extends mongoose.Document{
   _id;
   title     : string;
   userInfo  : string;

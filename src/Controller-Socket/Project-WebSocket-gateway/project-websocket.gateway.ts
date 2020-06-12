@@ -9,6 +9,7 @@ import { ProjectSessionManagerService } from '../../Model/SessionManager/Session
 import { WebsocketPacketDto } from '../../Model/DTO/WebsocketPacketDto/WebsocketPacketDto';
 import { WebsocketPacketActionEnum, WebsocketPacketScopeEnum } from '../../Model/DTO/WebsocketPacketDto/WebsocketPacketActionEnum';
 import { ParticipantState } from '../../Model/DTO/ProjectDto/ParticipantDto/participant-dto';
+import { SocketManagerService } from '../../Model/socket-service/socket-manager.service';
 
 @WebSocketGateway()
 export class ProjectWebsocketGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect{
@@ -16,12 +17,14 @@ export class ProjectWebsocketGateway implements OnGatewayInit, OnGatewayConnecti
   constructor(
     private userDao:UserDaoService,
     private projectDao:ProjectDaoService,
-    private projectSessionManagerService:ProjectSessionManagerService
+    private projectSessionManagerService:ProjectSessionManagerService,
+    private socketManagerService:SocketManagerService,
     ){
   }
 
   afterInit(server: Server): any {
     this.projectSessionManagerService.initService(this.server);
+    this.socketManagerService.socket = server;
   }
 
   @WebSocketServer() server: Server;

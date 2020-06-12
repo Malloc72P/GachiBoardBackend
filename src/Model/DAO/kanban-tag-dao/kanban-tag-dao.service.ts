@@ -11,11 +11,12 @@ import { WebsocketPacketDto } from '../../DTO/WebsocketPacketDto/WebsocketPacket
 import { RejectionEvent, RejectionEventEnum } from '../../Helper/PromiseHelper/RejectionEvent';
 import { KanbanDataDto } from '../../DTO/KanbanDataDto/kanban-data-dto';
 import { KanbanItemDaoService } from '../kanban-item-dao/kanban-item-dao.service';
+import * as mongoose from "mongoose";
 
 @Injectable()
 export class KanbanTagDaoService {
   constructor(
-    @InjectModel('KANBAN_TAG_MODEL') private readonly kanbanTagModel: Model<KanbanTagDtoIntf>,
+    @InjectModel('KANBAN_TAG_MODEL') private readonly kanbanTagModel: Model<mongoose.Document>,
     private projectDao:ProjectDaoService,
     private kanbanDataDao:KanbanDataDaoService,
     private kanbanItemDao:KanbanItemDaoService,

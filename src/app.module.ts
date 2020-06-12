@@ -34,8 +34,15 @@ import { KakaoStrategyService } from './Model/SocialLogin/kakao-strategy/kakao-s
 import { NaverStrategyService } from './Model/SocialLogin/naver-strategy/naver-strategy.service';
 import { ChattingWebsocketGateway } from './Controller-Socket/Chatting-WebSocket-gateway/chatting-websocket.gateway';
 import { VideoChatManagerService } from './Model/VideoChatManager/video-chat-manager/video-chat-manager.service';
+
 import { ChatMessageSchema } from './Model/DTO/ChatMessageDto/chat-message-schema';
 import { ChatMessageDaoService } from './Model/DAO/chat-message-dao/chat-message-dao.service';
+import { MulterModule } from '@nestjs/platform-express';
+import { CloudStorageController } from './Controller/cloud-storage/cloud-storage.controller';
+import { FileDaoService } from './Model/DAO/file-dao/file-dao.service';
+import { FileMetadataDaoService } from './Model/DAO/file-metadata-dao/file-metadata-dao.service';
+import { FileMetadataSchema } from './Model/DTO/FileMetadataDto/file-metadata.schema';
+import { SocketManagerService } from './Model/socket-service/socket-manager.service';
 
 @Module({
   imports: [
@@ -79,14 +86,24 @@ import { ChatMessageDaoService } from './Model/DAO/chat-message-dao/chat-message
             name: "CHAT_MESSAGE_MODEL",
             schema: ChatMessageSchema
           },
-        ])
+          {
+            name: "FILE_METADATA_MODEL",
+            schema: FileMetadataSchema
+          },
+        ]),
+    MulterModule.registerAsync({
+      useFactory: () => ({
+        dest: '/upload',
+      })
+    })
   ],
   controllers:
     [
       AppController,
       AuthCallbackController,
       ProjectController,
-      InviteCodeController
+      InviteCodeController,
+      CloudStorageController,
     ],
 
   providers:
@@ -116,6 +133,8 @@ import { ChatMessageDaoService } from './Model/DAO/chat-message-dao/chat-message
       WhiteboardSessionDaoService,
       WhiteboardItemDaoService,
       ChatMessageDaoService,
+      FileDaoService,
+      FileMetadataDaoService,
       /* **************************************************** */
       /* Data Access Object END */
       /* **************************************************** */
@@ -129,6 +148,7 @@ import { ChatMessageDaoService } from './Model/DAO/chat-message-dao/chat-message
       WbSessionWebsocketGateway,
       WbWebsocketGateway,
       ChattingWebsocketGateway,
+      SocketManagerService,
       /* **************************************************** */
       /* WebSocket END */
       /* **************************************************** */

@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
 
-export interface WhiteboardSessionDtoIntf extends Document{
+export interface WhiteboardSessionDtoIntf extends mongoose.Document{
   _id;
   title;
   createdBy;

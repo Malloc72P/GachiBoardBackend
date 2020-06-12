@@ -279,6 +279,14 @@ export class HttpHelper {
       updateReadDate: new WebSocketRequest(
         "textChat_updateReadDate", WebSocketTypeEnum.UPDATE
       )
+    },
+    cloudStorage : {
+      updated: new WebSocketRequest(
+        "cloudStorage_updated", WebSocketTypeEnum.UPDATE
+      ),
+      deleted: new WebSocketRequest(
+        "cloudStorage_deleted", WebSocketTypeEnum.UPDATE
+      ),
     }
   };
 
