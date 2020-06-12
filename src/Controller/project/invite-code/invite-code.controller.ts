@@ -52,7 +52,7 @@ export class InviteCodeController {
   }
   @Get()//초대코드를 가지고 오는 경우
   @UseGuards(AuthGuard('jwt'))
-  onInvitation(@Req() req, @Res() res, @Query() param) {
+  async onInvitation(@Req() req, @Res() res, @Query() param) {
 
     try {
       let inviteCode = param.inviteCode;
@@ -65,56 +65,59 @@ export class InviteCodeController {
       if (inviterIdToken === req.user) {
         throw "Inviter should  not be same with new one";
       }
+      let resolveData = await this.projectDaoService.verifyRequest(req.user, projectId);
+      let userDto:UserDto = resolveData.userDto;
+      let projectDto:ProjectDto = resolveData.projectDto;
+      let realInviteCode:InviteCodeDto = null;
 
-      this.projectDaoService.verifyRequest(req.user, projectId)
-        .then((resolveData)=>{
-          let userDto:UserDto = resolveData.userDto;
-          let projectDto:ProjectDto = resolveData.projectDto;
-          let realInviteCode:InviteCodeDto = null;
-          for(let currCode of projectDto.inviteCodeList){
-            if(currCode.inviteCode === inviteCode){
-              realInviteCode = currCode;
-              break;
-            }
-          }
-          if(!realInviteCode){
-            throw "InviteCode is expired";
-          }
-          if(realInviteCode.remainCount <= 0){
-            throw "InviteCode is expired";
-          }
+      for (let currProject of userDto.participatingProjects){
+        if(currProject._id.toString() === projectDto._id.toString()){
+          res.status(HttpStatus.CREATED).send({result : userDto});
+          return;
+        }
+      }
 
-          let newParticipant = ParticipantDto.createPriticipantDto(userDto);
-          newParticipant.authorityLevel = AuthorityLevel.NORMAL;
-          let isExist = false;
-          for(let participantDto of projectDto.participantList){
-            if(participantDto.idToken === newParticipant.idToken){
-              isExist = true;
-              participantDto.state = ParticipantState.AVAIL;
-              participantDto.authorityLevel = AuthorityLevel.NORMAL;
-              break;
-            }
-          }
-          if (!isExist) {
-            projectDto.participantList.push(newParticipant);
-          }
+      for(let currCode of projectDto.inviteCodeList){
+        if(currCode.inviteCode === inviteCode){
+          realInviteCode = currCode;
+          break;
+        }
+      }
+      if(!realInviteCode){
+        throw "InviteCode is expired";
+      }
+      if(realInviteCode.remainCount <= 0){
+        throw "InviteCode is expired";
+      }
 
-          realInviteCode.remainCount--;
-          if(realInviteCode.remainCount <= 0){
-            let delIdx = projectDto.inviteCodeList.indexOf(realInviteCode);
-            projectDto.inviteCodeList.splice(delIdx, 1);
-          }
+      let newParticipant = ParticipantDto.createPriticipantDto(userDto);
+      newParticipant.authorityLevel = AuthorityLevel.NORMAL;
+      let isExist = false;
+      for(let participantDto of projectDto.participantList){
+        if(participantDto.idToken === newParticipant.idToken){
+          isExist = true;
+          participantDto.state = ParticipantState.AVAIL;
+          participantDto.authorityLevel = AuthorityLevel.NORMAL;
+          break;
+        }
+      }
+      if (!isExist) {
+        projectDto.participantList.push(newParticipant);
+      }
 
-          this.projectDaoService.update(projectDto._id, projectDto)
-            .then(()=>{
-              userDto.participatingProjects.push(projectDto._id);
-              this.userDao.update(userDto._id, userDto).then(()=>{
-                this.userDao.findOne(userDto.idToken).then((resultUserDto:UserDto)=>{
-                  res.status(HttpStatus.CREATED).send({result : resultUserDto});
-                });
-              });
-          });
+      realInviteCode.remainCount--;
+      if(realInviteCode.remainCount <= 0){
+        let delIdx = projectDto.inviteCodeList.indexOf(realInviteCode);
+        projectDto.inviteCodeList.splice(delIdx, 1);
+      }
+      await this.projectDaoService.update(projectDto._id, projectDto);
+      userDto.participatingProjects.push(projectDto._id);
+      this.userDao.update(userDto._id, userDto).then(()=>{
+        this.userDao.findOne(userDto.idToken).then((resultUserDto:UserDto)=>{
+          res.status(HttpStatus.CREATED).send({result : resultUserDto});
+        });
       });
+
     } catch (e) {
       //console.log("InviteCodeController >> onInvitation >> e : ",e);
       res.status(HttpStatus.CREATED).send({result : "failed"});
