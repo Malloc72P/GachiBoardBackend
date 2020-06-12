@@ -25,7 +25,7 @@ export class Options {
   };
 
   public static workerOption = {
-    rtcMinPort: serverSecret.mediaSoup_min_port,
-    rtcMaxPort: serverSecret.mediaSoup_max_port,
+    rtcMinPort: serverSecret.deploy_mediaSoup_min_port,
+    rtcMaxPort: serverSecret.deploy_mediaSoup_max_port,
   }
 }
