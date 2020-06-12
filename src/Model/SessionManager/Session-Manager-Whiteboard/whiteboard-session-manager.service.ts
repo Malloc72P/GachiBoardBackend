@@ -83,6 +83,9 @@ export class WhiteboardSessionManagerService {
   /* Cursor Data Handler START */
   /* *************************************************** */
   addCursorData(wsServerInstance:Server, wsConnection:WebsocketConnection, newPosition:GachiPointDto, projectDto:ProjectDto){
+    if(!wsConnection){
+      return;
+    }
     if(!this.wbSessionMap.has(wsConnection.namespaceString)){
       this.wbSessionMap.set(wsConnection.namespaceString,
         new WhiteboardSessionInstance(

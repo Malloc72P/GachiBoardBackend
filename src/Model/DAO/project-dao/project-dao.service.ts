@@ -7,6 +7,7 @@ import { ProjectDto } from '../../DTO/ProjectDto/project-dto';
 import { UserDaoService } from '../user-dao/user-dao.service';
 import { KanbanDataDaoService } from '../kanban-data-dao/kanban-data-dao.service';
 import { KanbanDataDto } from '../../DTO/KanbanDataDto/kanban-data-dto';
+import { ParticipantDto } from '../../DTO/ProjectDto/ParticipantDto/participant-dto';
 
 @Injectable()
 export class ProjectDaoService {
@@ -49,7 +50,7 @@ export class ProjectDaoService {
       .exec();
   }
 
-  public getParticipantByUserDto(projectDto:ProjectDto, userDto:UserDto){
+  public getParticipantByUserDto(projectDto:ProjectDto, userDto:UserDto): ParticipantDto | false {
     for (let i = 0; i < projectDto.participantList.length; i++) {
       let value = projectDto.participantList[i];
       if(value.idToken === userDto.idToken){
@@ -66,8 +67,8 @@ export class ProjectDaoService {
 
   }
 
-  async verifyRequest(idToken, projectId, accessToken?:string): Promise<any>{
-    return new Promise<any>((resolve, reject)=>{
+  async verifyRequest(idToken, projectId, accessToken?:string): Promise<{ userDto: UserDto, projectDto: ProjectDto }>{
+    return new Promise<{userDto: UserDto, projectDto: ProjectDto}>((resolve, reject)=>{
       this.userDao.findOne(idToken).then((userDto:UserDto)=>{
         if(!userDto){
           reject(new Error("INVALID USER ID TOKEN DETECTED"));
@@ -89,6 +90,26 @@ export class ProjectDaoService {
           resolve(resolveParam);
         })//then
       })//then
+    });
+  }
+
+  public async updateLastReadDate(projectId: string, userId: string, date: Date): Promise<any> {
+    return new Promise<any>( async (resolve, reject) => {
+      const dto: { userDto: UserDto, projectDto: ProjectDto } = await this.verifyRequest(userId, projectId);
+
+      const participantDto: ParticipantDto | false = this.getParticipantByUserDto(dto.projectDto, dto.userDto);
+      if (participantDto) {
+        participantDto.lastReadDate = date;
+      } else {
+        reject(`Invalid userId or projectId Error`);
+      }
+
+      try {
+        await this.update(dto.projectDto._id, dto.projectDto);
+        resolve();
+      } catch (e) {
+        reject(`${e.message}\n${e.stack}`);
+      }
     });
   }
 }

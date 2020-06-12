@@ -12,6 +12,7 @@ import { HttpHelper, REST_RESPONSE } from '../../Model/Helper/HttpHelper/HttpHel
 import { RestPacketDto } from '../../Model/DTO/RestPacketDto/RestPacketDto';
 import { ProjectSessionManagerService } from '../../Model/SessionManager/Session-Manager-Project/project-session-manager.service';
 import { WebsocketPacketActionEnum } from '../../Model/DTO/WebsocketPacketDto/WebsocketPacketActionEnum';
+import { FileMetadataDaoService } from '../../Model/DAO/file-metadata-dao/file-metadata-dao.service';
 
 @Controller('project')
 export class ProjectController {
@@ -20,50 +21,47 @@ export class ProjectController {
     private userDao: UserDaoService,
     private projectDaoService: ProjectDaoService,
     private kanbanDataDao:KanbanDataDaoService,
-    private projectSessionManagerService:ProjectSessionManagerService
+    private projectSessionManagerService:ProjectSessionManagerService,
+    private fileMetadataDaoService:FileMetadataDaoService,
   ){
 
   }
 
   @Post()
   @UseGuards(AuthGuard('jwt'))
-  onCreateProject(@Req() req, @Res() res, @Body() projectDto:ProjectDto)
+  async onCreateProject(@Req() req, @Res() res, @Body() projectDto:ProjectDto)
   {
     //console.log("ProjectController >> onCreateProject >> 진입함");
     //console.log("ProjectController >> protectedResource >> req : ",req.user);
-
-    this.userDao.findOne(req.user).then((userDto:UserDto)=>{
-      //console.log("ProjectController >>  >> userDto : ",userDto);
+    try {
+      let userDto = await this.userDao.findOne(req.user);
       let newProjectDto = new ProjectDto();
       newProjectDto.projectTitle = projectDto.projectTitle;
 
       let newParticipant = ParticipantDto.createPriticipantDto(userDto);
-      newProjectDto.participantList.push( newParticipant );
+      newProjectDto.participantList.push(newParticipant);
 
       newProjectDto.createdBy = userDto.idToken;
       newProjectDto.startDate = new Date();
 
-      this.projectDaoService.create(newProjectDto).then((createdProject:ProjectDto)=>{
-        //console.log("ProjectController >>  >> data : ",createdProject);
+      let createdProject: ProjectDto = await this.projectDaoService.create(newProjectDto);
+      userDto.participatingProjects.push(createdProject._id);
+      await this.userDao.update(userDto._id, userDto);
 
-        userDto.participatingProjects.push(createdProject._id);
-        this.userDao.update( userDto._id, userDto ).then(()=>{
+      let createdKanbanData: KanbanDataDto = await this.kanbanDataDao.create(new KanbanDataDto());
+      createdProject.kanbanData = createdKanbanData._id;
 
-          this.kanbanDataDao.create(new KanbanDataDto()).then((createdKanbanData:KanbanDataDto)=>{
-            createdProject.kanbanData = createdKanbanData._id;
-            this.projectDaoService.update(createdProject._id, createdProject)
-              .then((updateResult)=>{
-                res.status(HttpStatus.CREATED).send(createdProject);
-            }).catch((e)=>{//console.log("ProjectController >> projectDaoService.update >> e : ",e);
-            });
-          }).catch((e)=>{//console.log("ProjectController >> kanbanDataDao.create >> e : ",e);
-          });
-        }).catch((e)=>{//console.log("ProjectController >> userDao.update >> e : ",e);
-        });
-      }).catch((e)=>{//console.log("ProjectController >> projectDaoService.create >> e : ",e);
-      });
-    }).catch((e)=>{//console.log("ProjectController >> userDao.findOne >> e : ",e);
-    });
+      let updateResult = await this.projectDaoService.update(createdProject._id, createdProject);
+
+      //CloudStorage생성
+      await this.fileMetadataDaoService.createFolder(
+        createdProject,userDto,"root",null
+      );
+
+      res.status(HttpStatus.CREATED).send(createdProject);
+    } catch (e) {
+
+    }
   }
 
   @Delete()

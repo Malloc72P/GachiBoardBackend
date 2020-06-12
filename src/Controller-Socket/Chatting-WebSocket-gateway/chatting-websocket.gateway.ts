@@ -6,12 +6,27 @@ import { WebsocketPacketDto } from '../../Model/DTO/WebsocketPacketDto/Websocket
 import { MediaKind, RtpCapabilities } from 'mediasoup/lib/RtpParameters';
 import { DtlsParameters, WebRtcTransport } from 'mediasoup/lib/WebRtcTransport';
 import { Consumer } from 'mediasoup/lib/Consumer';
+import { ChatMessageDto } from '../../Model/DTO/ChatMessageDto/chat-message-dto';
+import { ChatMessageDaoService } from '../../Model/DAO/chat-message-dao/chat-message-dao.service';
+import { ProjectDaoService } from '../../Model/DAO/project-dao/project-dao.service';
+import { UserDto } from '../../Model/DTO/UserDto/user-dto';
+import { ProjectDto } from '../../Model/DTO/ProjectDto/project-dto';
+import { ProjectSessionManagerService } from '../../Model/SessionManager/Session-Manager-Project/project-session-manager.service';
+import { WebsocketConnection } from '../../Model/SessionManager/Websocket-Connection/Websocket-Connection';
 
 @WebSocketGateway()
-export class VideoChatWebsocketGateway {
+export class ChattingWebsocketGateway {
   constructor(
     private videoChatManager: VideoChatManagerService,
-  ) { }
+    private chatMessageDao: ChatMessageDaoService,
+    private projectDao: ProjectDaoService,
+    private projectSessionManager: ProjectSessionManagerService,
+  ) {
+  }
+
+//  ##############################################
+//  ############## Video Chat Start ##############
+//  ##############################################
 
   @SubscribeMessage(HttpHelper.websocketApi.videoChat.getRouterRtpCapabilities.event)
   public async getRouterRtpCapabilities(socket: Socket, socketDto: WebsocketPacketDto) {
@@ -37,7 +52,7 @@ export class VideoChatWebsocketGateway {
       socket.emit(HttpHelper.websocketApi.videoChat.join.event, ackPacket);
       socket.broadcast.to(socketDto.namespaceValue).emit(HttpHelper.websocketApi.videoChat.join.event, socketDto);
     } catch (e) {
-      console.error("VideoChatWebsocketGateway >> onJoinVideoChatRoom >> Room join failed : ", e);
+      console.error('ChattingWebsocketGateway >> onJoinVideoChatRoom >> Room join failed : ', e);
       socket.emit(
         HttpHelper.websocketApi.videoChat.join.event,
         WebsocketPacketDto.createNakPacket(socketDto.wsPacketSeq, socketDto.namespaceValue));
@@ -86,7 +101,7 @@ export class VideoChatWebsocketGateway {
           break;
       }
 
-      if(!transport) {
+      if (!transport) {
         console.error(`Couldn't find ${data.type} transport with roomId - ${socketDto.senderIdToken}, userId - ${socketDto.senderIdToken}`);
       }
 
@@ -111,7 +126,7 @@ export class VideoChatWebsocketGateway {
       switch (kind) {
         case 'audio':
           for (let [key, user] of userList) {
-            if(key === socketDto.senderIdToken) continue;
+            if (key === socketDto.senderIdToken) continue;
             if (!!user.producerAudio && !user.producerAudio.closed) {
               producerIdArray.push(key);
             }
@@ -119,7 +134,7 @@ export class VideoChatWebsocketGateway {
           break;
         case 'video':
           for (let [key, user] of userList) {
-            if(key === socketDto.senderIdToken) continue;
+            if (key === socketDto.senderIdToken) continue;
             if (!!user.producerVideo && !user.producerVideo.closed) {
               producerIdArray.push(key);
             }
@@ -179,5 +194,68 @@ export class VideoChatWebsocketGateway {
     };
 
     socket.emit(HttpHelper.websocketApi.videoChat.consume.event, ackPacket);
+  }
+
+//  ##############################################
+//  ############## Text Chat Start ###############
+//  ##############################################
+
+  @SubscribeMessage(HttpHelper.websocketApi.textChat.sendMessage.event)
+  public async sendMessage(socket: Socket, chatMessageDto: ChatMessageDto) {
+    try {
+      console.log('ChattingWebsocketGateway >> sendMessage >> chatMessageDto : ', chatMessageDto);
+
+      // DB 전송
+      this.chatMessageDao.saveMessage(chatMessageDto).then((dto: ChatMessageDto) => {
+        // DB 성공시 확인 메시지 전송 (verify = true)
+        dto.verify = true;
+        socket.emit(HttpHelper.websocketApi.textChat.sendMessage.event, dto);
+
+        // 다른 유저들에게 전송
+        socket.broadcast.to(chatMessageDto.projectId).emit(HttpHelper.websocketApi.textChat.receiveMessage.event, chatMessageDto);
+      }).catch((dto: ChatMessageDto) => {
+        // DB 실패시 확인 메시지 전송 (verify = false)
+        dto.verify = false;
+        socket.emit(HttpHelper.websocketApi.textChat.sendMessage.event, dto);
+      });
+    } catch (e) {
+      console.error(e.message, e.stack);
+    }
+  }
+
+  @SubscribeMessage(HttpHelper.websocketApi.textChat.loadMessages.event)
+  public async loadMessages(socket: Socket, receivedData: { projectId: string, loadAt: string }) {
+    try {
+      const data = await this.chatMessageDao.loadMessages(receivedData.projectId, receivedData.loadAt);
+      const parsedData = ChatMessageDto.parseData(data);
+      socket.emit(HttpHelper.websocketApi.textChat.loadMessages.event, parsedData);
+    } catch (e) {
+      console.error(e.message, e.stack);
+    }
+  }
+
+  @SubscribeMessage(HttpHelper.websocketApi.textChat.getUnreadCount.event)
+  public async getUnreadCount(socket: Socket, receivedData: { projectId: string, userId: string }) {
+    try {
+      const dto: { userDto: UserDto, projectDto: ProjectDto } = await this.projectDao.verifyRequest(receivedData.userId, receivedData.projectId);
+      const participantDto = this.projectDao.getParticipantByUserDto(dto.projectDto, dto.userDto);
+      let date;
+      if (!!participantDto) {
+        date = participantDto.lastReadDate;
+        const unReadCount = await this.chatMessageDao.getUnreadCount(receivedData.projectId, date);
+        socket.emit(HttpHelper.websocketApi.textChat.getUnreadCount.event, unReadCount);
+      }
+    } catch (e) {
+      console.error(e.message, e.stack);
+    }
+  }
+
+  @SubscribeMessage(HttpHelper.websocketApi.textChat.updateReadDate.event)
+  public async updateReadDate(socket: Socket, receivedData: { projectId: string, userId: string, date: string }) {
+    try {
+      await this.projectDao.updateLastReadDate(receivedData.projectId, receivedData.userId, new Date(receivedData.date));
+    } catch (e) {
+      console.error(e.message, e.stack);
+    }
   }
 }

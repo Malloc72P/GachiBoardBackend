@@ -262,6 +262,31 @@ export class HttpHelper {
       producerClose: new WebSocketRequest(
         "videoChat_ProducerClose", WebSocketTypeEnum.DELETE
       ),
+    },
+    textChat: {
+      sendMessage: new WebSocketRequest(
+        "textChat_SendMessage", WebSocketTypeEnum.UPDATE
+      ),
+      receiveMessage: new WebSocketRequest(
+        "textChat_receiveMessage", WebSocketTypeEnum.UPDATE
+      ),
+      loadMessages: new WebSocketRequest(
+        "textChat_loadMessages", WebSocketTypeEnum.READ
+      ),
+      getUnreadCount: new WebSocketRequest(
+        "textChat_getUnreadCount", WebSocketTypeEnum.READ
+      ),
+      updateReadDate: new WebSocketRequest(
+        "textChat_updateReadDate", WebSocketTypeEnum.UPDATE
+      )
+    },
+    cloudStorage : {
+      updated: new WebSocketRequest(
+        "cloudStorage_updated", WebSocketTypeEnum.UPDATE
+      ),
+      deleted: new WebSocketRequest(
+        "cloudStorage_deleted", WebSocketTypeEnum.UPDATE
+      ),
     }
   };
 

@@ -268,7 +268,7 @@ export class KanbanWebsocketGateway{
   @SubscribeMessage(HttpHelper.websocketApi.kanban.update.event)
   onKanbanItemUpdate(socket: Socket, packetDto:WebsocketPacketDto) {
     let kanbanItemDto:KanbanItemDto = packetDto.dataDto as KanbanItemDto;
-
+    console.log("KanbanWebsocketGateway >> onKanbanItemUpdate >> kanbanItemDto : ",kanbanItemDto);
     this.kanbanItemDao.updateKanbanItem(packetDto)
       .then((resolveParam)=>{
         let userDto = resolveParam.userDto;

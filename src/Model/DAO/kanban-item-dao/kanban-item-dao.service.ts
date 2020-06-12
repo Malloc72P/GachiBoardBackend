@@ -173,15 +173,16 @@ export class KanbanItemDaoService {
             originKanbanItem.title = kanbanItemDto.title;
             originKanbanItem.color = kanbanItemDto.color;
             originKanbanItem.userInfo = kanbanItemDto.userInfo;
-            //console.log("KanbanItemDaoService >>  >> originKanbanItem : ",originKanbanItem);
+            originKanbanItem.timerStartDate = kanbanItemDto.timerStartDate;
+            originKanbanItem.timerEndDate = kanbanItemDto.timerEndDate;
+            originKanbanItem.isTimerStarted = kanbanItemDto.isTimerStarted;
+
             if(!originKanbanItem.tagIdList){
-              //console.log("KanbanItemDaoService >> !originKanbanItem.tagIdList >> 진입함");
               originKanbanItem.tagIdList =  new Array<any>();
             }else{
               originKanbanItem.tagIdList.splice(0, originKanbanItem.tagIdList.length);
             }
             for(let tagId of kanbanItemDto.tagIdList){
-              //console.log("KanbanItemDaoService >>  >> originKanbanItem : ",originKanbanItem);
               originKanbanItem.tagIdList.push(tagId);
             }
 
