@@ -1,5 +1,3 @@
-import Model from 'mongoose';
-
 export class ChatMessageDto {
   public _id: string;
   public userId: string;
@@ -9,9 +7,9 @@ export class ChatMessageDto {
   public verifyId: string;
   public verify: boolean;
 
-  public static parseData(databaseResult: Array<Model>): Array<ChatMessageDto> {
+  public static parseData(databaseResult: Array<any>): Array<ChatMessageDto> {
     const messagesDto: Array<ChatMessageDto> = new Array<ChatMessageDto>();
-    databaseResult.forEach((value: Model) => {
+    databaseResult.forEach((value: any) => {
       const messageDto = new ChatMessageDto();
 
       messageDto._id = value.id;
