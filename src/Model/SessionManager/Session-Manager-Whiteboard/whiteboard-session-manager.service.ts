@@ -136,4 +136,8 @@ export class WhiteboardSessionManagerService {
   /* **************************************************** */
   /* Cursor Data Handler END */
   /* **************************************************** */
+
+  getWbSession(wbSessionId){
+    return this.wbSessionMap.get(wbSessionId);
+  }
 }

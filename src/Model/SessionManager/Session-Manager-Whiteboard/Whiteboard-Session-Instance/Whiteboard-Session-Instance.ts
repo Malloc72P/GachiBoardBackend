@@ -6,6 +6,7 @@ import { timeInterval } from 'rxjs/operators';
 import { WebsocketPacketDto } from '../../../DTO/WebsocketPacketDto/WebsocketPacketDto';
 import { WebsocketPacketActionEnum } from '../../../DTO/WebsocketPacketDto/WebsocketPacketActionEnum';
 import { HttpHelper } from '../../../Helper/HttpHelper/HttpHelper';
+import Mutex from 'async-mutex/lib/Mutex';
 
 export class WhiteboardSessionInstance {
   public cursorDataArray:Array<CursorData>;
@@ -14,6 +15,7 @@ export class WhiteboardSessionInstance {
   private wsServer:Server;
   public cursorDataVersion = 0;
   private prevCursorDataVersion = 0;
+  public mutex;
 
   constructor(wsServer:Server, wbSessionNsp, projectNsp) {
     this.cursorDataArray = new Array<CursorData>();
@@ -21,6 +23,7 @@ export class WhiteboardSessionInstance {
     this.wbSessionNsp = wbSessionNsp;
     this.projectNsp = projectNsp;
     this.broadCastCursorData();
+    this.mutex = new Mutex();
   }
 
   broadCastCursorData(){
