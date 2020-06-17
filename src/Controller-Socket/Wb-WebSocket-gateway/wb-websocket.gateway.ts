@@ -10,16 +10,18 @@ import { WhiteboardItemType } from '../../Model/Helper/data-type-enum/data-type.
 import { EditableLinkDto } from '../../Model/DTO/WhiteboardItemDto/WhiteboardShapeDto/LinkPortDto/EditableLinkDto/editable-link-dto';
 import { WhiteboardItemDaoService } from '../../Model/DAO/whiteboard-item-dao/whiteboard-item-dao.service';
 import { SimpleRasterDto } from '../../Model/DTO/WhiteboardItemDto/WhiteboardShapeDto/EditableRasterDto/SimpleRasterDto/simple-raster-dto';
+import {Mutex} from 'async-mutex';
+import { WhiteboardSessionManagerService } from '../../Model/SessionManager/Session-Manager-Whiteboard/whiteboard-session-manager.service';
+import { WhiteboardSessionInstance } from '../../Model/SessionManager/Session-Manager-Whiteboard/Whiteboard-Session-Instance/Whiteboard-Session-Instance';
 
 @WebSocketGateway()
 export class WbWebsocketGateway{
-
   constructor(
     private userDao:UserDaoService,
     private projectDao:ProjectDaoService,
     private whiteboardItemDao:WhiteboardItemDaoService,
+    private wbSessionManager:WhiteboardSessionManagerService
     ){
-
   }
 
   private static _idGenerater:number = 0;
@@ -47,38 +49,50 @@ export class WbWebsocketGateway{
       });
   }
   @SubscribeMessage(HttpHelper.websocketApi.whiteboardItem.create.event)
-  onWbItemCreateRequest(socket: Socket, packetDto:WebsocketPacketDto) {
+  async onWbItemCreateRequest(socket: Socket, packetDto:WebsocketPacketDto) {
     // //console.log("WbWebsocketGateway >> onWbItemCreateRequest >> 진입함");
-    this.whiteboardItemDao.saveWbItem(packetDto)
-      .then((resolveParam)=>{
-        let userDto = resolveParam.userDto;
-        let projectDto = resolveParam.projectDto;
-        let createdWbItemPacket = resolveParam.createdWbItemPacket;
-        packetDto.dataDto = createdWbItemPacket.wbItemDto;
-        WbWebsocketGateway.responseAckPacket( socket, HttpHelper.websocketApi.whiteboardItem.create, packetDto, createdWbItemPacket);
-      });
+    let wbSession:WhiteboardSessionInstance = this.wbSessionManager.getWbSession(packetDto.namespaceValue);
+    let release = await wbSession.mutex.acquire();
+    try {
+      let resolveParam = await this.whiteboardItemDao.saveWbItem(packetDto);
+      let userDto = resolveParam.userDto;
+      let projectDto = resolveParam.projectDto;
+      let createdWbItemPacket = resolveParam.createdWbItemPacket;
+      packetDto.dataDto = createdWbItemPacket.wbItemDto;
+      WbWebsocketGateway.responseAckPacket( socket, HttpHelper.websocketApi.whiteboardItem.create, packetDto, createdWbItemPacket);
+    }catch (rejection) {
+      console.log("WbWebsocketGateway >> onWbItemCreateRequest >> rejection : ",rejection);
+      this.wsWbItemErrHandler(rejection, socket, packetDto, HttpHelper.websocketApi.whiteboardItem.update.event);
+    }finally {
+      release();
+    }
   }
 
   @SubscribeMessage(HttpHelper.websocketApi.whiteboardItem.create_multiple.event)
-  onWbItemMultipleCreateRequest(socket: Socket, packetDto:WebsocketPacketDto) {
+  async onWbItemMultipleCreateRequest(socket: Socket, packetDto:WebsocketPacketDto) {
     // //console.log("WbWebsocketGateway >> onWbItemMultipleCreateRequest >> 진입함");
     // //console.log("WbWebsocketGateway >> onWbItemMultipleCreateRequest >> packetDto : ",packetDto);
-    this.whiteboardItemDao.saveMultipleWbItem(packetDto)
-      .then((resolveParam)=>{
-        let userDto = resolveParam.userDto;
-        let projectDto = resolveParam.projectDto;
-        let createdWbItemPacket = resolveParam.createdWbItemPacket;
-        let wbItemArray:Array<WhiteboardItemDto> = new Array<WhiteboardItemDto>();
-        for(let wbItemPacket of createdWbItemPacket){
-            wbItemArray.push(wbItemPacket.wbItemDto);
-        }
-        packetDto.dataDto = wbItemArray;
-        packetDto.additionalData = createdWbItemPacket;
-        WbWebsocketGateway.responseAckPacket( socket, HttpHelper.websocketApi.whiteboardItem.create_multiple, packetDto);
-      })
-      .catch((rejection)=>{
-        this.wsWbItemErrHandler(rejection, socket, packetDto, HttpHelper.websocketApi.whiteboardItem.update.event);
-      });
+    let wbSession:WhiteboardSessionInstance = this.wbSessionManager.getWbSession(packetDto.namespaceValue);
+    let release = await wbSession.mutex.acquire();
+    try {
+      let resolveParam = await this.whiteboardItemDao.saveMultipleWbItem(packetDto);
+      let userDto = resolveParam.userDto;
+      let projectDto = resolveParam.projectDto;
+      let createdWbItemPacket = resolveParam.createdWbItemPacket;
+      let wbItemArray:Array<WhiteboardItemDto> = new Array<WhiteboardItemDto>();
+      for(let wbItemPacket of createdWbItemPacket){
+        wbItemArray.push(wbItemPacket.wbItemDto);
+      }
+      packetDto.dataDto = wbItemArray;
+      packetDto.additionalData = createdWbItemPacket;
+      WbWebsocketGateway.responseAckPacket( socket, HttpHelper.websocketApi.whiteboardItem.create_multiple, packetDto);
+    }
+    catch (rejection) {
+      this.wsWbItemErrHandler(rejection, socket, packetDto, HttpHelper.websocketApi.whiteboardItem.update.event);
+    }
+    finally {
+      release();
+    }
   }
   @SubscribeMessage(HttpHelper.websocketApi.whiteboardItem.updateZIndex.event)
   onWbItemUpdateZIndexRequest(socket: Socket, packetDto:WebsocketPacketDto) {
