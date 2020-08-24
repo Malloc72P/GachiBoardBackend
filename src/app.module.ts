@@ -51,6 +51,7 @@ import { SocketManagerService } from './Model/socket-service/socket-manager.serv
       {
         useNewUrlParser: true,
         useUnifiedTopology : true,
+        authSource: 'admin',
       }),
     MongooseModule.forFeature(
         [
