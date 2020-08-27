@@ -14,7 +14,7 @@ export class FileMetadataDaoService {
 
   }
   async create(fileMetadataDto: FileMetadataDto): Promise<any> {
-    console.log("FileMetadataDaoService >> create >> fileMetadataDto : ",fileMetadataDto);
+    // console.log("FileMetadataDaoService >> create >> fileMetadataDto : ",fileMetadataDto);
     const createdMetadata = new this.fileMetadataModel(fileMetadataDto);
     return await createdMetadata.save();
   }
@@ -35,7 +35,7 @@ export class FileMetadataDaoService {
       .exec();
   }
   async findChildrenByPath(path): Promise<any> {
-    console.log("FileMetadataDaoService >> findChildrenByPath >> path : ",path);
+    // console.log("FileMetadataDaoService >> findChildrenByPath >> path : ",path);
     return await this.fileMetadataModel.find({ path: path })
       .exec();
   }
@@ -59,7 +59,7 @@ export class FileMetadataDaoService {
   async getParentDirectory(path, projectDto){
     let tokenizedPath = path.split(',');
     let tgtDirectoryId = tokenizedPath[tokenizedPath.length - 2];
-    console.log("CloudStorageController >> getAllMetadata >> tgtDirectory : ",tgtDirectoryId);
+    // console.log("CloudStorageController >> getAllMetadata >> tgtDirectory : ",tgtDirectoryId);
     //찾은 폴더의 메타데이터를 가져온다
     let tgtDirectory:FileMetadataDto = null;
     if(tgtDirectoryId){
@@ -76,7 +76,7 @@ export class FileMetadataDaoService {
 
   async createFolder(projectDto:ProjectDto, userData:UserDto, folderName, parentFolder){
     try {
-      console.log('FileMetadataDaoService >> createFolder >> 진입함');
+      // console.log('FileMetadataDaoService >> createFolder >> 진입함');
       /*{projectId:5edcfc9e5530deb8fc418ba4, path:null}*/
       //새폴더 생성
       let newFolder = new FileMetadataDto(
@@ -94,7 +94,7 @@ export class FileMetadataDaoService {
     let newRoot = new FileMetadataDto(
       projectDto._id, null, "root", FileTypeEnum.DIRECTORY,0,
       -1, "System", new Date());
-    console.log("FileMetadataDaoService >> initRootDirectory >> newRoot : ",newRoot);
+    // console.log("FileMetadataDaoService >> initRootDirectory >> newRoot : ",newRoot);
     return await this.create(newRoot);
   }
   getFileType(filename, contentType){

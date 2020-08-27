@@ -203,7 +203,7 @@ export class ChattingWebsocketGateway {
   @SubscribeMessage(HttpHelper.websocketApi.textChat.sendMessage.event)
   public async sendMessage(socket: Socket, chatMessageDto: ChatMessageDto) {
     try {
-      console.log('ChattingWebsocketGateway >> sendMessage >> chatMessageDto : ', chatMessageDto);
+      // console.log('ChattingWebsocketGateway >> sendMessage >> chatMessageDto : ', chatMessageDto);
 
       // DB 전송
       this.chatMessageDao.saveMessage(chatMessageDto).then((dto: ChatMessageDto) => {
